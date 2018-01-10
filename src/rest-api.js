@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * A module to create a HAPI REST API connected to a PostGreSQL table
  * to reduce boilerplate code
@@ -5,6 +7,7 @@
  */
 const moment = require('moment');
 const forEach = require('lodash/forEach');
+const mapValues = require('lodash/mapValues');
 const omit = require('lodash/omit');
 const map = require('lodash/map');
 const uuidV4 = require('uuid/v4');
@@ -40,6 +43,7 @@ function HAPIRestAPI(config) {
    * @return {Promise} resolves with PostGres result
    */
   this.dbQuery = (query, queryParams) => {
+    console.log(query, queryParams);
     return this.config.connection.query(query, queryParams);
   }
 
@@ -76,23 +80,96 @@ function HAPIRestAPI(config) {
    * Find a single record in DB by primary key
    * @param {Mixed} request.params.id - the primary key value to search
    */
-  this.findOne = (request, reply) => {
+  this.findOne = async (request, reply) => {
     const {table, primaryKey} = this.config;
+
+    // Validate request
+    console.log('about to validate!');
+    const error = this.validateRequest(request);
+    if(error) {
+      return this.validationErrorReply(error, reply);
+    }
+
+    // Select data
     const query = `SELECT * FROM ${ table } WHERE ${ primaryKey }=$1`;
     const queryParams = [request.params.id];
-    Db.query(query, queryParams)
-      .then((res) => {
-        if(res.data.length) {
-          reply({error : null, data : res.data[0]});
+
+    try {
+      const result = await this.dbQuery(query, queryParams);
+      if(result.rows.length === 1) {
+          return reply({data : result.rows[0], error: null});
+      }
+      return reply({
+        data: null,
+        error : {
+          name : 'NotFoundError'
         }
-        else {
-          reply({error : {message : 'NotFoundError'}}).code(404);
-        }
-      })
-      .catch((err) => {
-        reply({error : err, data : null});
-      });
+      }).code(404);
+    }
+    catch(error) {
+      this.errorReply(error, reply);
+    }
   }
+
+
+  /**
+   * Validates the payload
+   * @param {Object} request - HAPI HTTP request instance
+   * @return {Mixed} error - object if error, null otherise
+   */
+  this.validateRequest = (request) => {
+
+    const {primaryKey} = this.config;
+
+    // ID in request params
+    if('id' in request.params) {
+      const data = {};
+      data[primaryKey] = request.params.id;
+      const {error} = Joi.validate(data, this.config.validation);
+      if(error) {
+        return error;
+      }
+    }
+    // Filtering data
+    // @TODO filter fails if array provided
+    if('filter' in request.query) {
+      const filterSchema = mapValues(this.config.validation, (value) => {
+        return [value, Joi.array().items(value)];
+      });
+      const filter = JSON.parse(request.query.filter);
+      const { error } = Joi.validate(filter, filterSchema);
+      if(error) {
+        return error;
+      }
+    }
+    // Sorting data
+    if('sort' in request.query) {
+      const sort = JSON.parse(request.query.sort);
+      const sortError = Object.keys(sort).reduce((memo, sortKey) => {
+        if(memo || sortKey in this.config.validation) {
+          return memo;
+        }
+        return {
+          name : "ValidationError",
+          message : `Sort field '${sortKey}' not defined in validation config`
+        };
+      }, null);
+      if(sortError) {
+        return sortError;
+      }
+    }
+
+    // Request body
+    if(request.payload) {
+      const {error} = Joi.validate(request.payload, this.config.validation);
+      if(error) {
+        return error;
+      }
+    }
+    return null;
+  }
+
+
 
   /**
    * Find many results
@@ -101,8 +178,15 @@ function HAPIRestAPI(config) {
    */
   this.findMany = async (request, reply) => {
 
+    // Validate request
+    const error = this.validateRequest(request);
+    if(error) {
+      return this.validationErrorReply(error, reply);
+    }
+
     const filter = 'filter' in request.query ? JSON.parse(request.query.filter) : {};
     const sort = 'sort' in request.query ? JSON.parse(request.query.sort) : {};
+
 
     // @TODO limit/paginate
     const {table, primaryKey} = this.config;
@@ -164,7 +248,7 @@ function HAPIRestAPI(config) {
 
     try {
       const result = await this.dbQuery(query, queryParams);
-      return reply({data, error: null});
+      return reply({data, error: null}).code(201);
     }
     catch(error) {
       this.errorReply(error, reply);
@@ -177,8 +261,13 @@ function HAPIRestAPI(config) {
    * @param {Object} request.payload - field/value pairs to update
    */
   this.update = async (request, reply) => {
-    const {table, primaryKey} = this.config;
+    // Validate request
+    const error = this.validateRequest(request);
+    if(error) {
+      return this.validationErrorReply(error, reply);
+    }
 
+    const {table, primaryKey} = this.config;
     const queryParams = [];
     const set = map(request.payload, (value, key) => {
       queryParams.push(value);
@@ -188,6 +277,23 @@ function HAPIRestAPI(config) {
     queryParams.push(request.params.id);
     const query = `UPDATE ${ table } SET ${ set.join(',') } WHERE ${ primaryKey }=$${ queryParams.length }`;
 
+    return this.updateOneQuery(query, queryParams, reply);
+  }
+
+  /**
+   * Replace a whole record (PUT)
+   * @TODO
+   */
+  this.replace = (request, reply)  => {
+    reply({error : 'Not implemented'}).code(501);
+  }
+
+
+
+  /**
+   * Perform and update or delete query that updates a single item
+   */
+  this.updateOneQuery = async (query, queryParams, reply) => {
     try {
       const result = await this.dbQuery(query, queryParams);
       // Was row updated?
@@ -203,16 +309,6 @@ function HAPIRestAPI(config) {
     catch(error) {
       this.errorReply(error, reply);
     }
-
-
-  }
-
-  /**
-   * Replace a whole record (PUT)
-   * @TODO
-   */
-  this.replace = (request, reply)  => {
-    reply({error : 'Not implemented'}).code(501);
   }
 
 
@@ -220,25 +316,20 @@ function HAPIRestAPI(config) {
    * Delete a record
    * @param {Mixed} request.params.id - the ID of the record to delete
    */
-  this.delete = (request, reply) => {
+  this.delete = async (request, reply) => {
+
     const {table, primaryKey} = this.config;
+
+    // Validate request
+    const error = this.validateRequest(request);
+    if(error) {
+      return this.validationErrorReply(error, reply);
+    }
+
     const query = `DELETE FROM ${ table } WHERE ${ primaryKey}=$1`;
     const queryParams = [request.params.id];
 
-    console.log(query,queryParams);
-
-    Db.query(query, queryParams)
-      .then((res) => {
-        if(res.error) {
-          return this.errorHandler(res, reply);
-        }
-        else {
-          reply({error : null, data : null}).code(200);
-        }
-      })
-      .catch((error) => {
-        reply({error, data : null});
-      });
+    return this.updateOneQuery(query, queryParams, reply);
   }
 
   /**

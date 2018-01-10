@@ -4,7 +4,7 @@
   "description": "Creates simple RESTful API routes in a HAPI application linked to a Postgres DB table ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "lab -t 90 -m 0"
   },
   "author": "",
   "license": "ISC",
@@ -16,9 +16,11 @@
   "devDependencies": {
     "blipp": "^2.3.0",
     "bluebird": "^3.5.1",
+    "code": "^5.1.2",
     "dotenv": "^4.0.0",
     "hapi": "^16.6.2",
     "joi": "^13.1.0",
+    "lab": "^15.2.0",
     "pg": "^7.4.1"
   }
 }

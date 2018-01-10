@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * SQL builder helper classeses
  * @module lib/sql

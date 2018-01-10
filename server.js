@@ -1,10 +1,15 @@
 'use strict';
+
+/**
+ * HAPI server used for testing
+ */
+
 require('dotenv').config();
 const Hapi = require('hapi');
 const { Pool } = require('pg');
 const { promisify } = require('bluebird');
-const Joi = require('joi');
 const Blipp = require('blipp');
+const SessionsApi = require('./sessions-api.js');
 
 // DB setup
 if (process.env.DATABASE_URL) {
@@ -18,6 +23,7 @@ if (process.env.DATABASE_URL) {
 }
 
 // Create a server with a host and port
+// const server = new Hapi.Server({ debug: { request: ['error'] } });
 const server = new Hapi.Server();
 server.connection({
       host: 'localhost',
@@ -27,27 +33,9 @@ server.connection({
 // Create DB connection
 const pool = new Pool(process.env.DATABASE_URL);
 
-const HAPIRestAPI = require('../src/rest-api');
-const SessionsApi = new HAPIRestAPI({
-  table : 'test.sessions',
-  connection : pool,
-  primaryKey : 'session_id',
-  endpoint : '/api/1.0/sessions',
-  onCreateTimestamp : 'date_created',
-  onUpdateTimestamp : 'date_updated',
-  validation : {
-    session_id : Joi.string().guid(),
-    ip : Joi.string(),
-    session_data : Joi.string(),
-    date_created : Joi.string(),
-    date_updated : Joi.string()
-  }
-});
-
 server.route([
-  ...SessionsApi.getRoutes()
+  ...SessionsApi(pool).getRoutes()
 ]);
-
 
 server.register({
     // Plugin to display the routes table to console at startup
@@ -56,22 +44,16 @@ server.register({
     options: {
       showAuth: true
     }
-  });
+});
 
 
-
-// Start the server
-async function start() {
-
-    try {
-        await server.start();
+// Start the server if not testing with Lab
+if (!module.parent) {
+  server.start((err) => {
+    if (err) {
+      throw err
     }
-    catch (err) {
-        console.log(err);
-        process.exit(1);
-    }
-
-    console.log('Server running at:', server.info.uri);
-};
-
-start();
+    console.log(`Server running at: ${server.info.uri}`)
+  })
+}
+module.exports = server
