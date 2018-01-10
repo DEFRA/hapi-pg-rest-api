@@ -2,7 +2,6 @@
 
 const Lab = require('lab')
 const lab = exports.lab = Lab.script();
-const moment = require('moment');
 
 const Code = require('code')
 const server = require('../server.js')

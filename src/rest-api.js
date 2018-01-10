@@ -28,7 +28,7 @@ function HAPIRestAPI(config) {
 
   // Require validation
   if(!config.validation) {
-    throw `Validation missing from API config`;
+    throw {name : 'ConfigError', message : `Validation missing from API config`};
   }
 
   this.config = Object.assign({
@@ -43,7 +43,6 @@ function HAPIRestAPI(config) {
    * @return {Promise} resolves with PostGres result
    */
   this.dbQuery = (query, queryParams) => {
-    console.log(query, queryParams);
     return this.config.connection.query(query, queryParams);
   }
 
@@ -84,7 +83,6 @@ function HAPIRestAPI(config) {
     const {table, primaryKey} = this.config;
 
     // Validate request
-    console.log('about to validate!');
     const error = this.validateRequest(request);
     if(error) {
       return this.validationErrorReply(error, reply);
@@ -274,6 +272,12 @@ function HAPIRestAPI(config) {
       return `${ key }=$${queryParams.length}`;
     });
 
+    // Set on update timestamp
+    if(this.config.onUpdateTimestamp) {
+      queryParams.push(moment().format('YYYY-MM-DD HH:mm:ss'));
+      set.push(`${ this.config.onUpdateTimestamp }=$${queryParams.length}`);
+    }
+
     queryParams.push(request.params.id);
     const query = `UPDATE ${ table } SET ${ set.join(',') } WHERE ${ primaryKey }=$${ queryParams.length }`;
 
@@ -285,13 +289,23 @@ function HAPIRestAPI(config) {
    * @TODO
    */
   this.replace = (request, reply)  => {
-    reply({error : 'Not implemented'}).code(501);
+    reply({
+      data : null,
+      error : {
+        name : 'NotImplementedError',
+        message : 'PUT for this API is not yet implemented'
+      }
+    }).code(501);
   }
 
 
 
   /**
    * Perform and update or delete query that updates a single item
+   * and make an HTTP response with HAPI
+   * @param {String} query - the SQL query
+   * @param {Array} queryParams - bound query params
+   * @param {Object} reply - HAPI HTTP reply interface
    */
   this.updateOneQuery = async (query, queryParams, reply) => {
     try {

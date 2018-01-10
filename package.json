@@ -4,7 +4,7 @@
   "description": "Creates simple RESTful API routes in a HAPI application linked to a Postgres DB table ",
   "main": "index.js",
   "scripts": {
-    "test": "lab -t 90 -m 0"
+    "test": "lab -t 90 -m 0 --coverage-path src/"
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +21,7 @@
     "hapi": "^16.6.2",
     "joi": "^13.1.0",
     "lab": "^15.2.0",
-    "pg": "^7.4.1"
+    "pg": "^7.4.1",
+    "sinon": "^4.1.4"
   }
 }

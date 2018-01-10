@@ -3,24 +3,12 @@
 /**
  * HAPI server used for testing
  */
-
 require('dotenv').config();
 const Hapi = require('hapi');
-const { Pool } = require('pg');
 const { promisify } = require('bluebird');
 const Blipp = require('blipp');
 const SessionsApi = require('./sessions-api.js');
-
-// DB setup
-if (process.env.DATABASE_URL) {
-  // get db params from env vars
-  const workingVariable = process.env.DATABASE_URL.replace('postgres://', '')
-  process.env.PGUSER = workingVariable.split('@')[0].split(':')[0]
-  process.env.PGPASSWORD = workingVariable.split('@')[0].split(':')[1]
-  process.env.PGHOST = workingVariable.split('@')[1].split(':')[0]
-  process.env.PSPORT = workingVariable.split('@')[1].split(':')[1].split('/')[0]
-  process.env.PGDATABASE = workingVariable.split('@')[1].split(':')[1].split('/')[1]
-}
+const pool = require('./db');
 
 // Create a server with a host and port
 // const server = new Hapi.Server({ debug: { request: ['error'] } });
@@ -29,9 +17,6 @@ server.connection({
       host: 'localhost',
       port: 8000
 });
-
-// Create DB connection
-const pool = new Pool(process.env.DATABASE_URL);
 
 server.route([
   ...SessionsApi(pool).getRoutes()
@@ -45,7 +30,6 @@ server.register({
       showAuth: true
     }
 });
-
 
 // Start the server if not testing with Lab
 if (!module.parent) {

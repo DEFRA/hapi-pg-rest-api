@@ -58,24 +58,29 @@ class SqlConditionBuilder {
    * @param {Mixed} value - the value
    * @return {SqlConditionBuilder} this
    */
-  andCaseInsensitive(field, value) {
-    // Null values
-    if(value === null) {
-      this.sqlFragments.push(` AND ${ field} IS NULL `);
-    }
-    // Array values
-    else if(isArray(value)) {
-      const bind = Array.from(Array(value.length), (e,i)=> '$' + (1 + i + this.params.length));
-      this.params.push(...value.map(s => s.toLowerCase()).join(','));
-      this.sqlFragments.push(` AND LOWER(${ field }) IN (${bind.join(',')})`);
-    }
-    // Scalar values
-    else {
-      this.params.push(value.toLowerCase());
-      this.sqlFragments.push(` AND LOWER(${ field })=$${this.params.length} `);
-    }
-    return this;
-  }
+  // andCaseInsensitive(field, value) {
+  //   // Null values
+  //   if(value === null) {
+  //     this.sqlFragments.push(` AND ${ field} IS NULL `);
+  //   }
+  //   // Array values
+  //   else if(isArray(value)) {
+  //     // For empty array
+  //     if(value.length === 0) {
+  //       this.sqlFragments.push(` AND 0=1 `);
+  //       return this;
+  //     }
+  //     const bind = Array.from(Array(value.length), (e,i)=> '$' + (1 + i + this.params.length));
+  //     this.params.push(...value.map(s => s.toLowerCase()).join(','));
+  //     this.sqlFragments.push(` AND LOWER(${ field }) IN (${bind.join(',')})`);
+  //   }
+  //   // Scalar values
+  //   else {
+  //     this.params.push(value.toLowerCase());
+  //     this.sqlFragments.push(` AND LOWER(${ field })=$${this.params.length} `);
+  //   }
+  //   return this;
+  // }
 
   /**
    * Get SQL query fragment
@@ -91,24 +96,6 @@ class SqlConditionBuilder {
    */
   getParams() {
     return this.params;
-  }
-
-  /**
-   * Add param
-   * @param {mixed} param - the value to add
-   * @return {SqlConditionBuilder} this
-   */
-  addParam(value) {
-    this.params.push(value);
-    return this;
-  }
-
-  /**
-   * Get param count
-   * @return {number}
-   */
-  getParamCount() {
-    return this.params.length;
   }
 
 }

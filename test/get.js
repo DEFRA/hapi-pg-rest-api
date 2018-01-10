@@ -175,6 +175,22 @@ lab.experiment('Test GET entity/entities', () => {
 
   });
 
+  lab.test('The API should handle filter request where filter array is empty', async () => {
+
+    const request = {
+      method: 'GET',
+      url: `/api/1.0/sessions?filter=${ JSON.stringify({"ip" : []}) }`
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(200);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+    Code.expect(payload.data.length).to.equal(0);
+
+  });
+
 
   lab.test('The API should sort the list of records ascending', async () => {
 
@@ -195,6 +211,24 @@ lab.experiment('Test GET entity/entities', () => {
     // Verify sort order
     const sessionIds = payload.data.map(item => item.session_id);
     Code.expect(sessionIds.join(',')).to.equal(sortBy(sessionIds).join(','));
+
+  });
+
+
+  lab.test('The API should reject invalid sort key', async () => {
+
+    const request = {
+      method: 'GET',
+      url: `/api/1.0/sessions?sort=${ JSON.stringify({'session_id' : 1, 'nonexistent_field' : 1}) }`
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(400);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+
+    Code.expect(payload.error.name).to.equal('ValidationError');
 
   });
 
