@@ -1,26 +1,25 @@
-'use strict'
 
-const Lab = require('lab')
-const lab = exports.lab = Lab.script();
 
-const Code = require('code')
-const server = require('../server.js')
+const Lab = require('lab');
+
+const lab = Lab.script();
+
+const Code = require('code');
+const server = require('../server.js');
 
 const uuidV4 = require('uuid/v4');
 
 let sessionId = null;
 
 lab.experiment('Test PATCH entity', () => {
-
   lab.before(async () => {
-
     const request = {
       method: 'POST',
-      url: `/api/1.0/sessions`,
+      url: '/api/1.0/sessions',
       payload: {
-        ip : '127.0.0.1',
-        session_data : JSON.stringify({'username' : 'bob'})
-      }
+        ip: '127.0.0.1',
+        session_data: JSON.stringify({ username: 'bob' }),
+      },
     };
 
     const res = await server.inject(request);
@@ -29,17 +28,15 @@ lab.experiment('Test PATCH entity', () => {
     // Check payload
     const payload = JSON.parse(res.payload);
     sessionId = payload.data.session_id;
-
   });
 
   lab.test('The API should update a single record by ID', async () => {
-
     const request = {
       method: 'PATCH',
       url: `/api/1.0/sessions/${sessionId}`,
-      payload : {
-        ip :  '10.0.1.1'
-      }
+      payload: {
+        ip: '10.0.1.1',
+      },
     };
 
     const res = await server.inject(request);
@@ -51,15 +48,13 @@ lab.experiment('Test PATCH entity', () => {
   });
 
 
-
   lab.test('The API should reject an invalid ID', async () => {
-
     const request = {
       method: 'PATCH',
-      url: `/api/1.0/sessions/invalid-guid`,
-      payload : {
-        ip :  '10.0.1.1'
-      }
+      url: '/api/1.0/sessions/invalid-guid',
+      payload: {
+        ip: '10.0.1.1',
+      },
     };
 
     const res = await server.inject(request);
@@ -71,13 +66,12 @@ lab.experiment('Test PATCH entity', () => {
   });
 
   lab.test('The API should return 404 for a record not found', async () => {
-
     const request = {
       method: 'GET',
-      url: `/api/1.0/sessions/${ uuidV4() }`,
-      payload : {
-        ip :  '10.0.1.1'
-      }
+      url: `/api/1.0/sessions/${uuidV4()}`,
+      payload: {
+        ip: '10.0.1.1',
+      },
     };
 
     const res = await server.inject(request);
@@ -90,13 +84,12 @@ lab.experiment('Test PATCH entity', () => {
   });
 
   lab.test('The API should reject invalid data', async () => {
-
     const request = {
       method: 'PATCH',
-      url: `/api/1.0/sessions/${ sessionId }`,
-      payload : {
-        ip :  123
-      }
+      url: `/api/1.0/sessions/${sessionId}`,
+      payload: {
+        ip: 123,
+      },
     };
 
     const res = await server.inject(request);
@@ -106,8 +99,6 @@ lab.experiment('Test PATCH entity', () => {
     const payload = JSON.parse(res.payload);
     Code.expect(payload.error.name).to.equal('ValidationError');
   });
+});
 
-
-
-
-})
+exports.lab = lab;

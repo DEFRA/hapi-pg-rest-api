@@ -11,15 +11,18 @@
   "dependencies": {
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "joi": "^13.1.0"
   },
   "devDependencies": {
     "blipp": "^2.3.0",
     "bluebird": "^3.5.1",
     "code": "^5.1.2",
     "dotenv": "^4.0.0",
+    "eslint": "^4.9.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.7.0",
     "hapi": "^16.6.2",
-    "joi": "^13.1.0",
     "lab": "^15.2.0",
     "pg": "^7.4.1",
     "sinon": "^4.1.4"

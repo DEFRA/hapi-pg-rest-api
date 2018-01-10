@@ -1,27 +1,25 @@
-'use strict'
 
-const Lab = require('lab')
-const lab = exports.lab = Lab.script();
-const moment = require('moment');
 
-const Code = require('code')
-const server = require('../server.js')
+const Lab = require('lab');
+
+const lab = Lab.script();
+
+const Code = require('code');
+const server = require('../server.js');
 
 const uuidV4 = require('uuid/v4');
 
 let sessionId = null;
 
 lab.experiment('Test DELETE entity', () => {
-
   lab.before(async () => {
-
     const request = {
       method: 'POST',
-      url: `/api/1.0/sessions`,
+      url: '/api/1.0/sessions',
       payload: {
-        ip : '127.0.0.1',
-        session_data : JSON.stringify({'username' : 'bob'})
-      }
+        ip: '127.0.0.1',
+        session_data: JSON.stringify({ username: 'bob' }),
+      },
     };
 
     const res = await server.inject(request);
@@ -30,14 +28,12 @@ lab.experiment('Test DELETE entity', () => {
     // Check payload
     const payload = JSON.parse(res.payload);
     sessionId = payload.data.session_id;
-
   });
 
   lab.test('The API should delete a single record by ID', async () => {
-
     const request = {
       method: 'DELETE',
-      url: `/api/1.0/sessions/${sessionId}`
+      url: `/api/1.0/sessions/${sessionId}`,
     };
 
     const res = await server.inject(request);
@@ -49,10 +45,9 @@ lab.experiment('Test DELETE entity', () => {
   });
 
   lab.test('The API should return validation error for invalid id', async () => {
-
     const request = {
       method: 'DELETE',
-      url: `/api/1.0/sessions/invalid-guid`
+      url: '/api/1.0/sessions/invalid-guid',
     };
 
     const res = await server.inject(request);
@@ -64,10 +59,9 @@ lab.experiment('Test DELETE entity', () => {
   });
 
   lab.test('The API should return 404 for deleting a record not found', async () => {
-
     const request = {
       method: 'DELETE',
-      url: `/api/1.0/sessions/${ uuidV4() }`
+      url: `/api/1.0/sessions/${uuidV4()}`,
     };
 
     const res = await server.inject(request);
@@ -77,6 +71,6 @@ lab.experiment('Test DELETE entity', () => {
     const payload = JSON.parse(res.payload);
     Code.expect(payload.error.name).to.equal('NotFoundError');
   });
+});
 
-
-})
+exports.lab = lab;

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * SQL builder helper classeses
  * @module lib/sql
@@ -16,7 +14,6 @@ const map = require('lodash/map');
  * @class
  */
 class SqlConditionBuilder {
-
   constructor() {
     this.params = [];
     this.sqlFragments = [];
@@ -30,57 +27,27 @@ class SqlConditionBuilder {
    */
   and(field, value) {
     // Null values
-    if(value === null) {
-      this.sqlFragments.push(` AND ${ field} IS NULL `);
+    if (value === null) {
+      this.sqlFragments.push(` AND ${field} IS NULL `);
     }
-    // Array values
-    else if(isArray(value)) {
+    else if (isArray(value)) {
       // For empty array
-      if(value.length === 0) {
-        this.sqlFragments.push(` AND 0=1 `);
+      if (value.length === 0) {
+        this.sqlFragments.push(' AND 0=1 ');
         return this;
       }
-      const bind = Array.from(Array(value.length), (e,i)=> '$' + (1 + i + this.params.length));
+      // Other arrays
+      const bind = Array.from(Array(value.length), (e, i) => `$${1 + i + this.params.length}`);
       this.params.push(...value);
-      this.sqlFragments.push(` AND ${ field } IN (${bind.join(',')})`);
+      this.sqlFragments.push(` AND ${field} IN (${bind.join(',')})`);
     }
     // Scalar values
     else {
       this.params.push(value);
-      this.sqlFragments.push(` AND ${ field }=$${this.params.length} `);
+      this.sqlFragments.push(` AND ${field}=$${this.params.length} `);
     }
     return this;
   }
-
-  /**
-   * Add an AND condition to query with lowercasing
-   * @param {String} field - the field name
-   * @param {Mixed} value - the value
-   * @return {SqlConditionBuilder} this
-   */
-  // andCaseInsensitive(field, value) {
-  //   // Null values
-  //   if(value === null) {
-  //     this.sqlFragments.push(` AND ${ field} IS NULL `);
-  //   }
-  //   // Array values
-  //   else if(isArray(value)) {
-  //     // For empty array
-  //     if(value.length === 0) {
-  //       this.sqlFragments.push(` AND 0=1 `);
-  //       return this;
-  //     }
-  //     const bind = Array.from(Array(value.length), (e,i)=> '$' + (1 + i + this.params.length));
-  //     this.params.push(...value.map(s => s.toLowerCase()).join(','));
-  //     this.sqlFragments.push(` AND LOWER(${ field }) IN (${bind.join(',')})`);
-  //   }
-  //   // Scalar values
-  //   else {
-  //     this.params.push(value.toLowerCase());
-  //     this.sqlFragments.push(` AND LOWER(${ field })=$${this.params.length} `);
-  //   }
-  //   return this;
-  // }
 
   /**
    * Get SQL query fragment
@@ -97,7 +64,6 @@ class SqlConditionBuilder {
   getParams() {
     return this.params;
   }
-
 }
 
 
@@ -119,8 +85,8 @@ class SqlSortBuilder {
    * @return {SqlSortBuilder} this
    */
   add(obj) {
-    const sort = map(obj, (isAscending, sortField) => {
-      this.sortFields.push(`${ sortField } ${isAscending===-1 ? 'DESC' : 'ASC'}`);
+    map(obj, (isAscending, sortField) => {
+      this.sortFields.push(`${sortField} ${isAscending === -1 ? 'DESC' : 'ASC'}`);
     });
     return this;
   }
@@ -137,5 +103,5 @@ class SqlSortBuilder {
 
 module.exports = {
   SqlSortBuilder,
-  SqlConditionBuilder
+  SqlConditionBuilder,
 };
