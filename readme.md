@@ -223,3 +223,36 @@ Body:
   "data" : null
 }
 ```
+
+## Validation
+
+Data is validated with Joi validation, and on failure, the 'error' key in the response is populated with the Joi error.
+
+For example:
+```
+{
+    "data": null,
+    "error": {
+        "name": "ValidationError",
+        "isJoi": true,
+        "details": [
+            {
+                "message": "\"ip\" must be a string",
+                "path": [
+                    "ip"
+                ],
+                "type": "string.base",
+                "context": {
+                    "value": 123,
+                    "key": "ip",
+                    "label": "ip"
+                }
+            }
+        ],
+        "_object": {
+            "ip": 123,
+            "session_data": "{\"key\" : \"value\"}"
+        }
+    }
+}
+```
