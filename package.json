@@ -7,7 +7,7 @@
     "test": "lab -t 90 -m 0 --coverage-path src/"
   },
   "author": "",
-  "license": "ISC",
+  "license": "OGLv3",
   "dependencies": {
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
