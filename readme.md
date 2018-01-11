@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/DEFRA/hapi-pg-rest-api.svg?branch=master)](https://travis-ci.org/DEFRA/hapi-pg-rest-api)
+[![Test Coverage](https://codecov.io/gh/DEFRA/hapi-pg-rest-api/branch/master/graphs/badge.svg)](https://codecov.io/gh/DEFRA/hapi-pg-rest-api)
 
 # HAPI REST API
 
