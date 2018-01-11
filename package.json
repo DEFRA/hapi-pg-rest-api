@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
-    "test": "lab -t 90 -m 0 --coverage-path src/"
+    "test": "node node_modules/lab/bin/lab -t 90 -m 0 --coverage-path ./src/"
   },
   "engines": {
     "node": ">=8.0"
