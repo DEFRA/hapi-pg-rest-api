@@ -6,6 +6,7 @@
   "scripts": {
     "test": "lab -t 90 -m 0 --coverage-path src/"
   },
+  "engines" : { "node" : ">=8.0" },
   "author": "",
   "license": "OGLv3",
   "dependencies": {
