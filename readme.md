@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/DEFRA/hapi-pg-rest-api.svg?branch=master)](https://travis-ci.org/DEFRA/hapi-pg-rest-api)
+
 # HAPI REST API
 
 A module to create a simple REST API in a HAPI application connected to a particular Postgres DB table.
@@ -266,31 +268,8 @@ For example:
 To run the test suite
 
 * Ensure the DATABASE_URL environment variable is set to a valid Postgres DSN
-* Create a 'test' schema in the database
-* Create the table using the query below
-* Run `npm run test`
-
-```
--- Table: test.sessions
-
--- DROP TABLE test.sessions;
-
-CREATE TABLE test.sessions
-(
-    session_id character varying COLLATE pg_catalog."default" NOT NULL,
-    session_data character varying COLLATE pg_catalog."default" NOT NULL,
-    ip character varying COLLATE pg_catalog."default" NOT NULL,
-    date_created timestamp with time zone NOT NULL,
-    date_updated timestamp with time zone,
-    CONSTRAINT sessions_pkey PRIMARY KEY (session_id)
-)
-WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
-
-```
-
+* Run `npm run migrate` to set up the test database tables
+* Run `npm run test` to run the lab test suite
 
 ## License
 
