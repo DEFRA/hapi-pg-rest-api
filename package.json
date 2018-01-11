@@ -4,9 +4,12 @@
   "description": "Creates simple RESTful API routes in a HAPI application linked to a Postgres DB table ",
   "main": "index.js",
   "scripts": {
+    "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
     "test": "lab -t 90 -m 0 --coverage-path src/"
   },
-  "engines" : { "node" : ">=8.0" },
+  "engines": {
+    "node": ">=8.0"
+  },
   "author": "",
   "license": "OGLv3",
   "dependencies": {
@@ -19,6 +22,8 @@
     "blipp": "^2.3.0",
     "bluebird": "^3.5.1",
     "code": "^5.1.2",
+    "db-migrate": "^0.10.2",
+    "db-migrate-pg": "^0.2.5",
     "dotenv": "^4.0.0",
     "eslint": "^4.9.0",
     "eslint-config-airbnb-base": "^12.1.0",

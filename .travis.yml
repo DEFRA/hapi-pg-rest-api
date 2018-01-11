@@ -4,3 +4,10 @@ node_js:
   - "8"
 install:
   - npm install
+  - npm run migrate
+services:
+  - postgresql
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
+env:
+  - DATABASE_URL=postgres://postgres:@localhost:5432/travis_ci_test
