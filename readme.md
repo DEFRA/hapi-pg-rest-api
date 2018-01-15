@@ -24,6 +24,16 @@ All routes return a standard response in form:
 }
 ```
 
+Some routes also return a rowCount parameter showing the number of rows modified, e.g.:
+
+```
+{
+  "error": null,
+  "data": null,
+  "rowCount" : 3
+}
+```
+
 ## Usage
 
 ```
@@ -168,7 +178,7 @@ Body:
 }
 ```
 
-### Update
+### Update One
 
 Request:
 ```
@@ -199,6 +209,29 @@ Body:
     "name" : "NotFoundError"
   },
   "data" : null
+}
+```
+
+### Update Many
+
+Request:
+```
+PATCH /endpoint?filter={"key" : "value"}
+Body:
+{
+  field : 'value',
+  field2: 'value2'
+}
+```
+
+Success Response:
+```
+200 OK
+Body:
+{
+  "error" : null,
+  "data" : null,
+  "rowCount" : 5    // number of rows modified
 }
 ```
 

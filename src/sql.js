@@ -1,6 +1,6 @@
 /**
  * SQL builder helper classeses
- * @module lib/sql
+ * @module sql
  */
 const isArray = require('lodash/isArray');
 const map = require('lodash/map');

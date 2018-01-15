@@ -1,7 +1,7 @@
 /**
  * A module to create a HAPI REST API connected to a PostGreSQL table
  * to reduce boilerplate code
- * @module lib/rest-api
+ * @module rest-api
  */
 const moment = require('moment');
 const forEach = require('lodash/forEach');
@@ -11,15 +11,7 @@ const map = require('lodash/map');
 const uuidV4 = require('uuid/v4');
 const Joi = require('joi');
 const { SqlConditionBuilder, SqlSortBuilder } = require('./sql');
-
-
-class ConfigError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'ConfigError';
-  }
-}
-
+const { ConfigError, ValidationError, NotFoundError } = require('./errors');
 
 /**
  * @param {Object} config - configuration options
@@ -126,7 +118,6 @@ function HAPIRestAPI(config) {
       }
     }
     // Filtering data
-    // @TODO filter fails if array provided
     if ('filter' in request.query) {
       const fSchema = mapValues(this.config.validation, value => [value, Joi.array().items(value)]);
       const filter = JSON.parse(request.query.filter);
@@ -248,7 +239,7 @@ function HAPIRestAPI(config) {
    * @param {String} request.params.id
    * @param {Object} request.payload - field/value pairs to update
    */
-  this.update = async (request, reply) => {
+  this.updateOne = async (request, reply) => {
     // Validate request
     const error = this.validateRequest(request);
     if (error) {
@@ -273,6 +264,59 @@ function HAPIRestAPI(config) {
 
     return this.updateOneQuery(query, queryParams, reply);
   };
+
+
+  /**
+   * Update many records (PATCH)
+   * @param {String} request.query.filter - JSON encoded filter params
+   * @param {Object} request.payload - field/value pairs to update
+   */
+  this.updateMany = async (request, reply) => {
+    // Validate request
+    const error = this.validateRequest(request);
+    if (error) {
+      return this.validationErrorReply(error, reply);
+    }
+
+    const { table, primaryKey } = this.config;
+
+    // Filter is required in this handler.  If a filter was omitted, the user
+    // could accidentally update all records
+    if (!('filter' in request.query)) {
+      return this.validationErrorReply(new ValidationError('\'filter\' is a required GET query parameter'), reply);
+    }
+    const filter = JSON.parse(request.query.filter);
+
+    const queryParams = [];
+    const where = map(filter, (value, key) => {
+      queryParams.push(value);
+      return `${key}=$${queryParams.length}`;
+    });
+
+    const set = map(request.payload, (value, key) => {
+      queryParams.push(value);
+      return `${key}=$${queryParams.length}`;
+    });
+
+    // Set on update timestamp
+    if (this.config.onUpdateTimestamp) {
+      queryParams.push(moment().format('YYYY-MM-DD HH:mm:ss'));
+      set.push(`${this.config.onUpdateTimestamp}=$${queryParams.length}`);
+    }
+    const query = `UPDATE ${table} SET ${set.join(',')} WHERE ${where.join(' AND ')}`;
+
+    try {
+      const result = await this.dbQuery(query, queryParams);
+
+      // Number of updated rows
+      const { rowCount } = result;
+      return reply({ data: null, error: null, rowCount }).code(200);
+    }
+    catch (err2) {
+      return this.errorReply(err2, reply);
+    }
+  };
+
 
   /**
    * Replace a whole record (PUT)
@@ -373,7 +417,7 @@ function HAPIRestAPI(config) {
       {
         method: 'PATCH',
         path: `${endpoint}/{id}`,
-        handler: this.update,
+        handler: this.updateOne,
         config: {
           description: `Patch single ${table} record`,
         },
@@ -392,6 +436,14 @@ function HAPIRestAPI(config) {
         handler: this.delete,
         config: {
           description: `Delete single ${table}record`,
+        },
+      },
+      {
+        method: 'PATCH',
+        path: `${endpoint}`,
+        handler: this.updateMany,
+        config: {
+          description: `Patch many ${table} records`,
         },
       },
     ];

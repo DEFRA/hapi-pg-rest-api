@@ -47,6 +47,43 @@ lab.experiment('Test PATCH entity', () => {
     Code.expect(payload.error).to.equal(null);
   });
 
+  lab.test('The API should bulk update by query filter', async () => {
+    const request = {
+      method: 'PATCH',
+      url: `/api/1.0/sessions?filter=${JSON.stringify({
+        ip: '10.0.1.1',
+      })}`,
+      payload: {
+        ip: '127.0.0.1',
+      },
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(200);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+    Code.expect(payload.rowCount).to.be.greaterThan(0);
+    Code.expect(payload.error).to.equal(null);
+  });
+
+  lab.test('The API should require filter param for bulk update', async () => {
+    const request = {
+      method: 'PATCH',
+      url: '/api/1.0/sessions',
+      payload: {
+        ip: '127.0.0.1',
+      },
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(400);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+    Code.expect(payload.error.name).to.equal('ValidationError');
+  });
+
 
   lab.test('The API should reject an invalid ID', async () => {
     const request = {
