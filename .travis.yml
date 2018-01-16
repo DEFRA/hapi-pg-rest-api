@@ -3,6 +3,8 @@ node_js:
   - "8"
 install:
   - npm install
+addons:
+  postgresql: "9.6"
 services:
   - postgresql
 before_script:
