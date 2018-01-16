@@ -145,14 +145,19 @@ class SQLQueryBuilder {
    * @return {Object} - {query, queryParams}
    */
   insertQuery() {
-    const { table } = this.config;
+    const { table, upsert } = this.config;
     const { data } = this;
 
     const fields = Object.keys(data);
     const queryParams = Object.values(data);
     const values = fields.map((value, i) => `$${i + 1}`);
 
-    const query = `INSERT INTO ${table} (${fields.join(',')}) VALUES (${values.join(',')})`;
+    let query = `INSERT INTO ${table} (${fields.join(',')}) VALUES (${values.join(',')})`;
+
+    if (upsert) {
+      const parts = upsert.set.map(field => `${field}=EXCLUDED.${field}`);
+      query += ` ON CONFLICT (${upsert.fields.join(',')}) DO UPDATE SET ${parts.join(',')}`;
+    }
 
     return { query, queryParams };
   }

@@ -8,6 +8,10 @@ module.exports = pool => new HAPIRestAPI({
   endpoint: '/api/1.0/sessions',
   onCreateTimestamp: 'date_created',
   onUpdateTimestamp: 'date_updated',
+  upsert: {
+    fields: ['session_id'],
+    set: ['session_data'],
+  },
   validation: {
     session_id: Joi.string().guid(),
     ip: Joi.string(),

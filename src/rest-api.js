@@ -30,6 +30,7 @@ function HAPIRestAPI(config) {
     preInsert: data => data,
     preUpdate: data => data,
     preQuery: result => result,
+    upsert: null,
   }, config);
 
   // Create request processor instance

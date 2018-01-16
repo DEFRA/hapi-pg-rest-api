@@ -73,7 +73,10 @@ server.route([
 * `onCreateTimestamp` : a field which will be updated when the record is created
 * `onUpdateTimestamp` : a field which will be updated when the record is updated
 * `validation` : an object containing Joi validation for the entity (required)
-
+* `preUpdate` : a function which can filter the data object being updated
+* `preInsert` : a function which can filter the data object being inserted
+* `preQuery` : a function which can modify the data, filter and sort after a HAPI request has been interpreted  
+* `upsert` : an object containing arrays `fields` and `set` - adds an on conflict clause to an insert 
 
 ## Supported Endpoints
 
