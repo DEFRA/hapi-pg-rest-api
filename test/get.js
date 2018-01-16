@@ -30,7 +30,6 @@ lab.experiment('Test GET entity/entities', () => {
     const payload = JSON.parse(res.payload);
 
     sessionId = payload.data.session_id;
-    console.log('sessionId', sessionId);
   });
 
   lab.test('The API should get a single record by ID', async () => {
@@ -40,7 +39,6 @@ lab.experiment('Test GET entity/entities', () => {
     };
 
     const res = await server.inject(request);
-    console.log(' ==== RES', res);
     Code.expect(res.statusCode).to.equal(200);
 
     // Check payload
