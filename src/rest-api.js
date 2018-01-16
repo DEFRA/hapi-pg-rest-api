@@ -4,14 +4,10 @@
  * @module rest-api
  */
 const moment = require('moment');
-const forEach = require('lodash/forEach');
-const mapValues = require('lodash/mapValues');
-const omit = require('lodash/omit');
-const map = require('lodash/map');
 const uuidV4 = require('uuid/v4');
-const Joi = require('joi');
-const { SqlConditionBuilder, SqlSortBuilder } = require('./sql');
-const { ConfigError, ValidationError, NotFoundError } = require('./errors');
+const { ConfigError, NotFoundError } = require('./errors');
+const Request = require('./request.js');
+const Query = require('./query.js');
 
 /**
  * @param {Object} config - configuration options
@@ -28,10 +24,16 @@ function HAPIRestAPI(config) {
     throw new ConfigError('Validation missing from API config');
   }
 
+  // Create config object with defaults
   this.config = Object.assign({
     // Modify data pre-insert
     preInsert: data => data,
+    preUpdate: data => data,
+    preQuery: result => result,
   }, config);
+
+  // Create request processor instance
+  this.request = new Request(this.config);
 
   /**
    * Do DB query
@@ -48,222 +50,153 @@ function HAPIRestAPI(config) {
    * @param {Object} reply - HAPI HTTP reply interface
    */
   this.errorReply = (error, reply) => {
+    // console.error(error);
+
+    // Validation error is a bad request - 400
+    if (error.name === 'ValidationError') {
+      return reply({ error, data: null }).code(400);
+    }
+    // Config error - server issue
+    if (error.name === 'ConfigError') {
+      return reply({ error, data: null }).code(500);
+    }
+    // Config error - server issue
+    if (error.name === 'NotFoundError') {
+      return reply({ error, data: null }).code(404);
+    }
+
+    // DB error
     const { code } = error;
     const statusCode = code === 23505 ? 400 : 500;
     return reply({ error: { name: 'DBError', code }, data: null }).code(statusCode);
   };
 
-  /**
-   * Reply with validation error message
-   * @param {Object} error - PostGres DB response
-   * @param {Object} reply - HAPI HTTP reply interface
-   */
-  this.validationErrorReply = (error, reply) => reply({
-    data: null,
-    error: Object.assign({
-      name: 'ValidationError',
-    }, error),
-  }).code(400);
 
   /**
-   * Find a single record in DB by primary key
-   * @param {Mixed} request.params.id - the primary key value to search
+   * Find one/many results
    */
-  this.findOne = async (request, reply) => {
-    const { table, primaryKey } = this.config;
-
-    // Validate request
-    const error = this.validateRequest(request);
-    if (error) {
-      return this.validationErrorReply(error, reply);
-    }
-
-    // Select data
-    const query = `SELECT * FROM ${table} WHERE ${primaryKey}=$1`;
-    const queryParams = [request.params.id];
-
+  this.find = async (hapiRequest, reply, isMany = false) => {
     try {
+      const request = this.request.processRequest(hapiRequest);
+
+      const q = new Query(config);
+
+      const { query, queryParams } = q.select()
+        .setFilter(request.filter)
+        .setSort(request.sort)
+        .getQuery();
+
       const result = await this.dbQuery(query, queryParams);
-      if (result.rows.length === 1) {
+
+      if (isMany) {
+        return reply({ data: result.rows, error: null });
+      }
+      else if (result.rows.length !== 1) {
+        throw new NotFoundError('Query must return exactly 1 row');
+      }
+      else {
         return reply({ data: result.rows[0], error: null });
       }
-      return reply({
-        data: null,
-        error: {
-          name: 'NotFoundError',
-        },
-      }).code(404);
     }
-    catch (err2) {
-      return this.errorReply(err2, reply);
+    catch (error) {
+      return this.errorReply(error, reply);
     }
   };
 
 
   /**
-   * Validates the payload
-   * @param {Object} request - HAPI HTTP request instance
-   * @return {Mixed} error - object if error, null otherise
+   * Find single record
+   * @param {Object} request - HAPI HTTP request interface
+   * @param {Object} request.params - URL params
+   * @param {String} request.params.id - ID of the record to find
+   * @param {Object} reply - HAPI HTTP reply interface
+   * @return {Promise} resolves with HAPI reply
    */
-  this.validateRequest = (request) => {
-    const { primaryKey } = this.config;
-
-    // ID in request params
-    if ('id' in request.params) {
-      const data = {};
-      data[primaryKey] = request.params.id;
-      const { error } = Joi.validate(data, this.config.validation);
-      if (error) {
-        return error;
-      }
-    }
-    // Filtering data
-    if ('filter' in request.query) {
-      const fSchema = mapValues(this.config.validation, value => [value, Joi.array().items(value)]);
-      const filter = JSON.parse(request.query.filter);
-      const { error } = Joi.validate(filter, fSchema);
-      if (error) {
-        return error;
-      }
-    }
-    // Sorting data
-    if ('sort' in request.query) {
-      const sort = JSON.parse(request.query.sort);
-      const sortError = Object.keys(sort).reduce((memo, sortKey) => {
-        if (memo || sortKey in this.config.validation) {
-          return memo;
-        }
-        return {
-          name: 'ValidationError',
-          message: `Sort field '${sortKey}' not defined in validation config`,
-        };
-      }, null);
-      if (sortError) {
-        return sortError;
-      }
-    }
-
-    // Request body
-    if (request.payload) {
-      const { error } = Joi.validate(request.payload, this.config.validation);
-      if (error) {
-        return error;
-      }
-    }
-    return null;
-  };
+  this.findOne = async (request, reply) => this.find(request, reply, false);
 
 
   /**
-   * Find many results
-   * @param {Object} request.query
+   * Find many records
+   * @param {Object} request - HAPI HTTP request interface
+   * @param {Object} request.query - GET query params
    * @param {String} request.query.filter - JSON encoded filter
+   * @param {String} request.query.sort - JSON encoded sort
+   * @param {Object} reply - HAPI HTTP reply interface
+   * @return {Promise} resolves with HAPI reply
    */
-  this.findMany = async (request, reply) => {
-    // Validate request
-    const error = this.validateRequest(request);
-    if (error) {
-      return this.validationErrorReply(error, reply);
-    }
-
-    const filter = 'filter' in request.query ? JSON.parse(request.query.filter) : {};
-    const sort = 'sort' in request.query ? JSON.parse(request.query.sort) : {};
-
-
-    // @TODO limit/paginate
-    const { table } = this.config;
-    const conditions = new SqlConditionBuilder();
-
-    // Filtering
-    forEach(filter, (value, key) => {
-      conditions.and(key, value);
-    });
-
-    let query = `SELECT * FROM ${table} WHERE 0=0 ${conditions.getSql()}`;
-    const queryParams = conditions.getParams();
-
-    // Sorting
-    const sortBuilder = new SqlSortBuilder();
-    query += sortBuilder.add(sort).getSql();
-
-    try {
-      const result = await this.dbQuery(query, queryParams);
-      return reply({ data: result.rows, error: null });
-    }
-    catch (err2) {
-      return this.errorReply(err2, reply);
-    }
-  };
-
+  this.findMany = async (request, reply) => this.find(request, reply, true);
 
   /**
    * Create a new record (POST)
    * @param {Object} request.payload - the data to insert
    */
-  this.create = async (request, reply) => {
-    const { table, primaryKey, validation } = this.config;
-
-    // Validate payload
-    const schema = omit(validation, primaryKey);
-    const { error } = Joi.validate(request.payload, schema);
-    if (error) {
-      return this.validationErrorReply(error, reply);
-    }
-
-    // Call pre-insert hook
-    const data = this.config.preInsert(request.payload);
-    data[primaryKey] = uuidV4();
-
-    // Set on create timestamp
-    if (this.config.onCreateTimestamp) {
-      data[this.config.onCreateTimestamp] = moment().format('YYYY-MM-DD HH:mm:ss');
-    }
-
-    const fields = Object.keys(data);
-    const queryParams = Object.values(data);
-    const values = fields.map((value, i) => `$${i + 1}`);
-
-    const query = `INSERT INTO ${table} (${fields.join(',')}) VALUES (${values.join(',')})`;
+  this.create = async (hapiRequest, reply) => {
+    const { primaryKey } = this.config;
 
     try {
+      const q = new Query(config);
+      const command = this.request.processRequest(hapiRequest);
+
+      // Call pre-insert hook
+      const data = this.config.preInsert(command.data);
+      data[primaryKey] = uuidV4();
+
+      // Set on create timestamp
+      if (this.config.onCreateTimestamp) {
+        data[this.config.onCreateTimestamp] = moment().format('YYYY-MM-DD HH:mm:ss');
+      }
+
+      const { query, queryParams } = q.insert()
+        .setData(data)
+        .getQuery();
+
       await this.dbQuery(query, queryParams);
       return reply({ data, error: null }).code(201);
     }
-    catch (err2) {
-      return this.errorReply(err2, reply);
+    catch (error) {
+      return this.errorReply(error, reply);
     }
   };
+
+
+  this.update = async (hapiRequest, reply, isMany) => {
+    try {
+      const q = new Query(config);
+      const command = this.request.processRequest(hapiRequest);
+
+      // Call pre-update hook
+      const data = this.config.preUpdate(command.data);
+
+      // Set on update timestamp
+      if (this.config.onUpdateTimestamp) {
+        data[this.config.onUpdateTimestamp] = moment().format('YYYY-MM-DD HH:mm:ss');
+      }
+
+      const { query, queryParams } = q.update()
+        .setData(data)
+        .setFilter(command.filter)
+        .getQuery();
+
+      const { rowCount } = await this.dbQuery(query, queryParams);
+
+      if (isMany || (rowCount === 1)) {
+        return reply({ data: null, error: null, rowCount });
+      }
+
+      throw new NotFoundError('Query must update exactly 1 row');
+    }
+    catch (error) {
+      return this.errorReply(error, reply);
+    }
+  };
+
 
   /**
    * Update a single record (PATCH)
    * @param {String} request.params.id
    * @param {Object} request.payload - field/value pairs to update
    */
-  this.updateOne = async (request, reply) => {
-    // Validate request
-    const error = this.validateRequest(request);
-    if (error) {
-      return this.validationErrorReply(error, reply);
-    }
-
-    const { table, primaryKey } = this.config;
-    const queryParams = [];
-    const set = map(request.payload, (value, key) => {
-      queryParams.push(value);
-      return `${key}=$${queryParams.length}`;
-    });
-
-    // Set on update timestamp
-    if (this.config.onUpdateTimestamp) {
-      queryParams.push(moment().format('YYYY-MM-DD HH:mm:ss'));
-      set.push(`${this.config.onUpdateTimestamp}=$${queryParams.length}`);
-    }
-
-    queryParams.push(request.params.id);
-    const query = `UPDATE ${table} SET ${set.join(',')} WHERE ${primaryKey}=$${queryParams.length}`;
-
-    return this.updateOneQuery(query, queryParams, reply);
-  };
+  this.updateOne = async (request, reply) => this.update(request, reply, false);
 
 
   /**
@@ -271,51 +204,7 @@ function HAPIRestAPI(config) {
    * @param {String} request.query.filter - JSON encoded filter params
    * @param {Object} request.payload - field/value pairs to update
    */
-  this.updateMany = async (request, reply) => {
-    // Validate request
-    const error = this.validateRequest(request);
-    if (error) {
-      return this.validationErrorReply(error, reply);
-    }
-
-    const { table, primaryKey } = this.config;
-
-    // Filter is required in this handler.  If a filter was omitted, the user
-    // could accidentally update all records
-    if (!('filter' in request.query)) {
-      return this.validationErrorReply(new ValidationError('\'filter\' is a required GET query parameter'), reply);
-    }
-    const filter = JSON.parse(request.query.filter);
-
-    const queryParams = [];
-    const where = map(filter, (value, key) => {
-      queryParams.push(value);
-      return `${key}=$${queryParams.length}`;
-    });
-
-    const set = map(request.payload, (value, key) => {
-      queryParams.push(value);
-      return `${key}=$${queryParams.length}`;
-    });
-
-    // Set on update timestamp
-    if (this.config.onUpdateTimestamp) {
-      queryParams.push(moment().format('YYYY-MM-DD HH:mm:ss'));
-      set.push(`${this.config.onUpdateTimestamp}=$${queryParams.length}`);
-    }
-    const query = `UPDATE ${table} SET ${set.join(',')} WHERE ${where.join(' AND ')}`;
-
-    try {
-      const result = await this.dbQuery(query, queryParams);
-
-      // Number of updated rows
-      const { rowCount } = result;
-      return reply({ data: null, error: null, rowCount }).code(200);
-    }
-    catch (err2) {
-      return this.errorReply(err2, reply);
-    }
-  };
+  this.updateMany = async (request, reply) => this.update(request, reply, true);
 
 
   /**
@@ -334,50 +223,28 @@ function HAPIRestAPI(config) {
 
 
   /**
-   * Perform and update or delete query that updates a single item
-   * and make an HTTP response with HAPI
-   * @param {String} query - the SQL query
-   * @param {Array} queryParams - bound query params
-   * @param {Object} reply - HAPI HTTP reply interface
+   * Delete a record
+   * @param {Mixed} hapiRequest.params.id - the ID of the record to delete
    */
-  this.updateOneQuery = async (query, queryParams, reply) => {
+  this.delete = async (hapiRequest, reply) => {
     try {
-      const result = await this.dbQuery(query, queryParams);
-      // Was row updated?
-      if (result.rowCount === 1) {
-        return reply({ data: null, error: null });
-      }
+      const q = new Query(config);
+      const command = this.request.processRequest(hapiRequest);
 
-      return reply({
-        data: null,
-        error: {
-          name: 'NotFoundError',
-        },
-      }).code(404);
+      const { query, queryParams } = q.delete()
+        .setFilter(command.filter)
+        .getQuery();
+
+      const { rowCount } = await this.dbQuery(query, queryParams);
+
+      if (rowCount > 0) {
+        return reply({ data: null, error: null, rowCount });
+      }
+      throw new NotFoundError('No records deleted');
     }
     catch (error) {
       return this.errorReply(error, reply);
     }
-  };
-
-
-  /**
-   * Delete a record
-   * @param {Mixed} request.params.id - the ID of the record to delete
-   */
-  this.delete = async (request, reply) => {
-    const { table, primaryKey } = this.config;
-
-    // Validate request
-    const error = this.validateRequest(request);
-    if (error) {
-      return this.validationErrorReply(error, reply);
-    }
-
-    const query = `DELETE FROM ${table} WHERE ${primaryKey}=$1`;
-    const queryParams = [request.params.id];
-
-    return this.updateOneQuery(query, queryParams, reply);
   };
 
   /**

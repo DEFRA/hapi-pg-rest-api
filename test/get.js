@@ -28,7 +28,9 @@ lab.experiment('Test GET entity/entities', () => {
 
     // Check payload
     const payload = JSON.parse(res.payload);
+
     sessionId = payload.data.session_id;
+    console.log('sessionId', sessionId);
   });
 
   lab.test('The API should get a single record by ID', async () => {
@@ -38,14 +40,17 @@ lab.experiment('Test GET entity/entities', () => {
     };
 
     const res = await server.inject(request);
+    console.log(' ==== RES', res);
     Code.expect(res.statusCode).to.equal(200);
 
     // Check payload
     const payload = JSON.parse(res.payload);
 
+
     Code.expect(payload.error).to.equal(null);
     Code.expect(payload.data.session_id).to.be.a.string();
   });
+
 
   lab.test('The API should reject an invalid ID', async () => {
     const request = {
