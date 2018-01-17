@@ -25,17 +25,13 @@ class APIClient {
    * @return {Promise} - resolves with new row data on success
    */
   async create(body) {
-    const { error, data } = await this.rp({
+    return this.makeRequest({
       uri: this.config.endpoint,
       method: 'POST',
       body,
       headers: this.config.headers,
       json: true,
     });
-    if (error) {
-      throw error;
-    }
-    return data;
   }
 
   /**
@@ -44,16 +40,12 @@ class APIClient {
    * @return {Promise} resolves with single record if found
    */
   async findOne(id) {
-    const { error, data } = await this.rp({
+    return this.makeRequest({
       uri: `${this.config.endpoint}/${id}`,
       method: 'GET',
       headers: this.config.headers,
       json: true,
     });
-    if (error) {
-      throw error;
-    }
-    return data;
   }
 
   /**
@@ -62,19 +54,16 @@ class APIClient {
    * @param {Object} sort
    */
   async findMany(filter = {}, sort = {}) {
-    const { error, data } = await this.rp({
+    return this.makeRequest({
       uri: `${this.config.endpoint}`,
       method: 'GET',
       headers: this.config.headers,
       qs: {
-        filter, sort,
+        filter: JSON.stringify(filter),
+        sort: JSON.stringify(sort),
       },
       json: true,
     });
-    if (error) {
-      throw error;
-    }
-    return data;
   }
 
   /**
@@ -84,17 +73,13 @@ class APIClient {
    * @return {Promise} - resolves with API response
    */
   async updateOne(id, body) {
-    const { error, data } = await this.rp({
+    return this.makeRequest({
       uri: `${this.config.endpoint}/${id}`,
       method: 'PATCH',
       headers: this.config.headers,
       body,
       json: true,
     });
-    if (error) {
-      throw error;
-    }
-    return data;
   }
 
   /**
@@ -104,18 +89,14 @@ class APIClient {
    * @return {Promise} - resolves with {data, rowCount}
    */
   async updateMany(filter, body) {
-    const { error, data, rowCount } = await this.rp({
+    return this.makeRequest({
       uri: `${this.config.endpoint}`,
       method: 'PATCH',
       headers: this.config.headers,
       body,
-      qs: { filter },
+      qs: { filter: JSON.stringify(filter) },
       json: true,
     });
-    if (error) {
-      throw error;
-    }
-    return { data, rowCount };
   }
 
   /**
@@ -124,16 +105,36 @@ class APIClient {
     * @return {Promise} - resolves when deleted
     */
   async delete(id) {
-    const { error, data } = await this.rp({
+    return this.makeRequest({
       uri: `${this.config.endpoint}/${id}`,
       method: 'DELETE',
       headers: this.config.headers,
       json: true,
     });
-    if (error) {
-      throw error;
+  }
+
+  /**
+   * Make request with request-promise-native
+   * @param {Object} options - request promise options
+   */
+  async makeRequest(options) {
+    try {
+      const { data, rowCount } = await this.rp(options);
+      if (typeof (rowCount) === 'number') {
+        return { data, rowCount };
+      }
+      return data;
     }
-    return data;
+    catch (error) {
+      // API error
+      if (error.error.error.name) {
+        throw error.error.error;
+      }
+      // Rethrow other error
+      else {
+        throw error;
+      }
+    }
   }
 }
 
