@@ -22,6 +22,7 @@ class ConfigError extends Error {
 class ValidationError extends Error {
   constructor(message) {
     super(message);
+    this.message = message;
     this.name = 'ValidationError';
   }
 }
