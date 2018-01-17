@@ -119,21 +119,15 @@ class APIClient {
    */
   async makeRequest(options) {
     try {
-      const { data, rowCount } = await this.rp(options);
-      if (typeof (rowCount) === 'number') {
-        return { data, rowCount };
-      }
-      return data;
+      return await this.rp(options);
     }
     catch (error) {
       // API error
       if (error.error.error.name) {
-        throw error.error.error;
+        return { data: null, error: error.error.error };
       }
       // Rethrow other error
-      else {
-        throw error;
-      }
+      throw error;
     }
   }
 }

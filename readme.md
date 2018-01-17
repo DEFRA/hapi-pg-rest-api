@@ -326,23 +326,27 @@ const filter = {field : 'value'};
 const sort = {field2 : +1, field3 : -1};
 
 // Single record
-var record = client.create(data)   
-var record = client.findOne('guid')
-var {rowCount} = client.updateOne('guid', data)  
-client.delete('guid');
+var {data, error} = await client.create(data)   
+var {data, error} = await client.findOne('guid')
+var {data, rowCount, error} = await client.updateOne('guid', data)  
+await client.delete('guid');
 
 // Batch
-var records = client.findMany(filter, sort)  
-var {rowCount} = client.updateMany(filter, data)
+var {data, error} = await client.findMany(filter, sort)  
+var {data, rowCount, error} = await client.updateMany(filter, data)
 ```
 
 ### Error Handling
 
-All the client methods above throw an error if something is unexpected (status code not in 200 range)
+For errors returned by the API, e.g. Joi validation errors,  this is returned as
+normal in the return from the call.
+
+For other errors, e.g. those generates by the HTTP request (e.g. bad gateway),
+the error is thrown.
+All the client methods above throw an error if a n
 
 This can be either an error returned by the API, e.g. a Joi validation error, or a status code error returned from request-promise-native.
 
-```
 
 ## Tests
 
