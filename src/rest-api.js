@@ -31,6 +31,8 @@ function HAPIRestAPI(config) {
     preUpdate: data => data,
     preQuery: result => result,
     upsert: null,
+    primaryKeyAuto: false,
+    primaryKeyGuid: true,
   }, config);
 
   // Create request processor instance
@@ -140,7 +142,11 @@ function HAPIRestAPI(config) {
 
       // Call pre-insert hook
       const data = this.config.preInsert(command.data);
-      data[primaryKey] = uuidV4();
+
+      // Auto-generate primary key
+      if (!this.config.primaryKeyAuto && this.config.primaryKeyGuid) {
+        data[primaryKey] = uuidV4();
+      }
 
       // Set on create timestamp
       if (this.config.onCreateTimestamp) {
@@ -151,8 +157,8 @@ function HAPIRestAPI(config) {
         .setData(data)
         .getQuery();
 
-      await this.dbQuery(query, queryParams);
-      return reply({ data, error: null }).code(201);
+      const result = await this.dbQuery(query, queryParams);
+      return reply({ data: result.rows[0], error: null }).code(201);
     }
     catch (error) {
       return this.errorReply(error, reply);
