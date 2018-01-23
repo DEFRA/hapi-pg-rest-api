@@ -8,6 +8,7 @@ const Hapi = require('hapi');
 const { promisify } = require('bluebird');
 const Blipp = require('blipp');
 const SessionsApi = require('./sessions-api.js');
+const SessionsApiContext = require('./sessions-api-context.js');
 const AutoPKApi = require('./auto-pk-api.js');
 const pool = require('./db');
 
@@ -21,6 +22,7 @@ server.connection({
 
 server.route([
   ...SessionsApi(pool).getRoutes(),
+  ...SessionsApiContext(pool).getRoutes(),
   ...AutoPKApi(pool).getRoutes(),
 ]);
 

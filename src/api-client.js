@@ -3,6 +3,7 @@
  * @module api-client
  * @class APIClient
  */
+const forEach = require('lodash/forEach');
 
 class APIClient {
   /**
@@ -17,6 +18,31 @@ class APIClient {
     };
     this.config = Object.assign({}, defaults, config);
     this.rp = rp;
+    this.urlParams = {};
+  }
+
+
+  /**
+   * Sets context, e.g. when endpoint is like /api/{someId}/entity/{id}
+   * @param {Object} URL context params
+   */
+  setParams(urlParams = {}) {
+    this.urlParams = urlParams;
+    return this;
+  }
+
+  /**
+   * Get URL for call
+   * @param {Mixed} [id] - the ID of the entity to get/update/delete
+   * @return {String} URL
+   */
+  getUrl(id) {
+    let url = id ? `${this.config.endpoint}/${id}` : this.config.endpoint;
+    // Replace context params in URL
+    forEach(this.urlParams, (val, key) => {
+      url = url.replace(`{${key}}`, val);
+    });
+    return url;
   }
 
   /**
@@ -26,7 +52,7 @@ class APIClient {
    */
   async create(body) {
     return this.makeRequest({
-      uri: this.config.endpoint,
+      uri: this.getUrl(),
       method: 'POST',
       body,
       headers: this.config.headers,
@@ -41,7 +67,7 @@ class APIClient {
    */
   async findOne(id) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}/${id}`,
+      uri: this.getUrl(id),
       method: 'GET',
       headers: this.config.headers,
       json: true,
@@ -55,7 +81,7 @@ class APIClient {
    */
   async findMany(filter = {}, sort = {}) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}`,
+      uri: this.getUrl(),
       method: 'GET',
       headers: this.config.headers,
       qs: {
@@ -74,7 +100,7 @@ class APIClient {
    */
   async updateOne(id, body) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}/${id}`,
+      uri: this.getUrl(id),
       method: 'PATCH',
       headers: this.config.headers,
       body,
@@ -90,7 +116,7 @@ class APIClient {
    */
   async updateMany(filter, body) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}`,
+      uri: this.getUrl(),
       method: 'PATCH',
       headers: this.config.headers,
       body,
@@ -106,7 +132,7 @@ class APIClient {
     */
   async delete(id) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}/${id}`,
+      uri: this.getUrl(id),
       method: 'DELETE',
       headers: this.config.headers,
       json: true,

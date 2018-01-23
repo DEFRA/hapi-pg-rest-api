@@ -18,6 +18,10 @@ const client = new APIClient(rp, {
   endpoint: 'http://localhost:8000/api/1.0/sessions',
 });
 
+const client2 = new APIClient(rp, {
+  endpoint: 'http://localhost:8000/api/1.0/{ip}/sessions',
+});
+
 let sessionId;
 let sessionId2;
 
@@ -51,6 +55,7 @@ lab.experiment('Test APIClient', () => {
     Code.expect(data.length).to.be.greaterThan(0);
   });
 
+
   // GET many - filtered
   lab.test('The client should find records with filtering', async () => {
     const { data } = await client.findMany({ session_id: sessionId });
@@ -76,6 +81,18 @@ lab.experiment('Test APIClient', () => {
 
     Code.expect(sessionIds.join(',')).to.equal(reverseSorted.join(','));
   });
+
+  // GET many with URL params
+  lab.test('The client should find all records with URL params', async () => {
+    const { data } = await client2.setParams({ ip: '127.0.0.1' }).findMany();
+
+    Code.expect(data).to.be.an.array();
+
+    data.forEach((row) => {
+      Code.expect(row.ip).to.equal('127.0.0.1');
+    });
+  });
+
 
   // PATCH one
   lab.test('The client should update a record', async () => {
