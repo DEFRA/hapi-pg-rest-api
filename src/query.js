@@ -159,6 +159,8 @@ class SQLQueryBuilder {
       query += ` ON CONFLICT (${upsert.fields.join(',')}) DO UPDATE SET ${parts.join(',')}`;
     }
 
+    query += ' RETURNING * ';
+
     return { query, queryParams };
   }
 
