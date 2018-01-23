@@ -47,6 +47,9 @@ lab.experiment('Test GET entity/entities', () => {
 
     Code.expect(payload.error).to.equal(null);
     Code.expect(payload.data.session_id).to.be.a.string();
+
+    // Check calculated field
+    Code.expect(payload.data.added_field).to.equal('ROW-0');
   });
 
 
@@ -94,6 +97,9 @@ lab.experiment('Test GET entity/entities', () => {
 
     Code.expect(payload.error).to.equal(null);
     Code.expect(payload.data).to.be.an.array();
+
+    // Check calculated field
+    Code.expect(payload.data[0].added_field).to.equal('ROW-0');
   });
 
   lab.test('The API should filter the list of records', async () => {

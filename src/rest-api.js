@@ -30,6 +30,7 @@ function HAPIRestAPI(config) {
     preInsert: data => data,
     preUpdate: data => data,
     preQuery: result => result,
+    postSelect: data => data,
     upsert: null,
     primaryKeyAuto: false,
     primaryKeyGuid: true,
@@ -92,13 +93,13 @@ function HAPIRestAPI(config) {
       const result = await this.dbQuery(query, queryParams);
 
       if (isMany) {
-        return reply({ data: result.rows, error: null });
+        return reply({ data: this.config.postSelect(result.rows), error: null });
       }
       else if (result.rows.length !== 1) {
         throw new NotFoundError('Query must return exactly 1 row');
       }
       else {
-        return reply({ data: result.rows[0], error: null });
+        return reply({ data: this.config.postSelect(result.rows)[0], error: null });
       }
     }
     catch (error) {

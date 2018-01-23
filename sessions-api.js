@@ -12,6 +12,9 @@ module.exports = pool => new HAPIRestAPI({
     fields: ['session_id'],
     set: ['session_data'],
   },
+  postSelect: data => data.map((row, i) =>
+    // Add a calculated field to data output
+    ({ added_field: `ROW-${i}`, ...row })),
   validation: {
     session_id: Joi.string().guid(),
     ip: Joi.string(),
