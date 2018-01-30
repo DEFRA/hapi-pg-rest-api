@@ -176,7 +176,7 @@ class SQLQueryBuilder {
     });
 
 
-    const query = `UPDATE ${table} SET ${parts.join(',')} ${filterQuery} `;
+    const query = `UPDATE ${table} SET ${parts.join(',')} ${filterQuery} RETURNING * `;
 
     return { query, queryParams };
   }

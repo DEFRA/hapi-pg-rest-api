@@ -185,10 +185,11 @@ function HAPIRestAPI(config) {
         .setFilter(command.filter)
         .getQuery();
 
-      const { rowCount } = await this.dbQuery(query, queryParams);
+      const { rowCount, rows } = await this.dbQuery(query, queryParams);
 
       if (isMany || (rowCount === 1)) {
-        return reply({ data: null, error: null, rowCount });
+        const returnData = isMany ? rows : rows[0];
+        return reply({ data: returnData, error: null, rowCount });
       }
 
       throw new NotFoundError('Query must update exactly 1 row');

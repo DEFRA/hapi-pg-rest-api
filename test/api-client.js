@@ -98,7 +98,7 @@ lab.experiment('Test APIClient', () => {
   lab.test('The client should update a record', async () => {
     const { data, rowCount } = await client.updateOne(sessionId, { ip: '0.0.0.0' });
 
-    Code.expect(data).to.equal(null);
+    Code.expect(data.ip).to.equal('0.0.0.0');
     Code.expect(rowCount).to.equal(1);
   });
 
