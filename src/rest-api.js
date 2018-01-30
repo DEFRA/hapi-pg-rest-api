@@ -188,7 +188,7 @@ function HAPIRestAPI(config) {
       const { rowCount, rows } = await this.dbQuery(query, queryParams);
 
       if (isMany || (rowCount === 1)) {
-        const returnData = isMany ? rows : rows[0];
+        const returnData = isMany ? null : rows[0];
         return reply({ data: returnData, error: null, rowCount });
       }
 
