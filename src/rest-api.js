@@ -81,7 +81,7 @@ function HAPIRestAPI(config) {
    */
   this.find = async (hapiRequest, reply, isMany = false) => {
     try {
-      const request = this.request.processRequest(hapiRequest);
+      const request = await this.request.processRequest(hapiRequest);
 
       const q = new Query(config);
 
@@ -139,10 +139,10 @@ function HAPIRestAPI(config) {
 
     try {
       const q = new Query(config);
-      const command = this.request.processRequest(hapiRequest);
+      const command = await this.request.processRequest(hapiRequest);
 
       // Call pre-insert hook
-      const data = this.config.preInsert(command.data);
+      const data = await this.config.preInsert(command.data);
 
       // Auto-generate primary key
       if (!this.config.primaryKeyAuto && this.config.primaryKeyGuid) {
@@ -170,10 +170,10 @@ function HAPIRestAPI(config) {
   this.update = async (hapiRequest, reply, isMany) => {
     try {
       const q = new Query(config);
-      const command = this.request.processRequest(hapiRequest);
+      const command = await this.request.processRequest(hapiRequest);
 
       // Call pre-update hook
-      const data = this.config.preUpdate(command.data);
+      const data = await this.config.preUpdate(command.data);
 
       // Set on update timestamp
       if (this.config.onUpdateTimestamp) {
@@ -237,7 +237,7 @@ function HAPIRestAPI(config) {
   this.delete = async (hapiRequest, reply) => {
     try {
       const q = new Query(config);
-      const command = this.request.processRequest(hapiRequest);
+      const command = await this.request.processRequest(hapiRequest);
 
       const { query, queryParams } = q.delete()
         .setFilter(command.filter)
