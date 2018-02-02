@@ -55,6 +55,12 @@ lab.experiment('Test APIClient', () => {
     Code.expect(data.length).to.be.greaterThan(0);
   });
 
+  // GET many with pagination
+  lab.test('The client should find all records', async () => {
+    const { data } = await client.findMany({}, {}, { page: 1, perPage: 1 });
+    Code.expect(data.length).to.equal(1);
+  });
+
 
   // GET many - filtered
   lab.test('The client should find records with filtering', async () => {

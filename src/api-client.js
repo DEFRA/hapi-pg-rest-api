@@ -78,16 +78,22 @@ class APIClient {
    * Find many records
    * @param {Object} filter
    * @param {Object} sort
+   * @param {Object} pagination - e.g. {page : 5, perPage, 20}
    */
-  async findMany(filter = {}, sort = {}) {
+  async findMany(filter = {}, sort = {}, pagination = null) {
+    const qs = {
+      filter: JSON.stringify(filter),
+      sort: JSON.stringify(sort),
+    };
+    if (pagination) {
+      qs.pagination = JSON.stringify(pagination);
+    }
+
     return this.makeRequest({
       uri: this.getUrl(),
       method: 'GET',
       headers: this.config.headers,
-      qs: {
-        filter: JSON.stringify(filter),
-        sort: JSON.stringify(sort),
-      },
+      qs,
       json: true,
     });
   }

@@ -54,8 +54,6 @@ function HAPIRestAPI(config) {
    * @param {Object} reply - HAPI HTTP reply interface
    */
   this.errorReply = (error, reply) => {
-    // console.error(error);
-
     // Validation error is a bad request - 400
     if (error.name === 'ValidationError') {
       return reply({ error, data: null }).code(400);
@@ -77,6 +75,29 @@ function HAPIRestAPI(config) {
 
 
   /**
+   * Get pagination info for paginated request
+   * Includes total row count and number of pages
+   * @param {Object} request - internal request object
+   * @return {Object} pagination info
+   */
+  this.getPagination = async (request) => {
+    const q = new Query(config);
+    const { query, queryParams } = q.selectRowCount()
+      .setFilter(request.filter)
+      .getQuery();
+
+    const result = await this.dbQuery(query, queryParams);
+    const totalRows = parseInt(result.rows[0].totalrowcount, 10);
+
+    return {
+      ...request.pagination,
+      totalRows,
+      pageCount: Math.ceil(totalRows / request.pagination.perPage),
+    };
+  };
+
+
+  /**
    * Find one/many results
    */
   this.find = async (hapiRequest, reply, isMany = false) => {
@@ -88,12 +109,19 @@ function HAPIRestAPI(config) {
       const { query, queryParams } = q.select()
         .setFilter(request.filter)
         .setSort(request.sort)
+        .setPagination(request.pagination)
         .getQuery();
 
       const result = await this.dbQuery(query, queryParams);
 
       if (isMany) {
-        return reply({ data: this.config.postSelect(result.rows), error: null });
+        const replyData = { data: this.config.postSelect(result.rows), error: null };
+
+        if (request.pagination) {
+          replyData.pagination = await this.getPagination(request);
+        }
+
+        return reply(replyData);
       }
       else if (result.rows.length !== 1) {
         throw new NotFoundError('Query must return exactly 1 row');

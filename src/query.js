@@ -7,6 +7,7 @@ const map = require('lodash/map');
 const { ConfigError } = require('./errors.js');
 
 const MODE_SELECT = 'select';
+const MODE_SELECT_ROW_COUNT = 'select-row-count';
 const MODE_INSERT = 'insert';
 const MODE_UPDATE = 'update';
 const MODE_DELETE = 'delete';
@@ -20,12 +21,18 @@ class SQLQueryBuilder {
     this.data = {};
     this.filter = {};
     this.sort = {};
+    this.pagination = null;
 
     return this;
   }
 
   select() {
     this.mode = MODE_SELECT;
+    return this;
+  }
+
+  selectRowCount() {
+    this.mode = MODE_SELECT_ROW_COUNT;
     return this;
   }
 
@@ -51,6 +58,11 @@ class SQLQueryBuilder {
 
   setFilter(filter = {}) {
     this.filter = filter;
+    return this;
+  }
+
+  setPagination(pagination = null) {
+    this.pagination = pagination;
     return this;
   }
 
@@ -106,6 +118,19 @@ class SQLQueryBuilder {
 
 
   /**
+   * Get pagination query LIMIT/OFFSET
+   * @return {String|null}
+   */
+  getPaginationQuery() {
+    if (this.pagination) {
+      const limit = parseInt(this.pagination.perPage, 10);
+      const offset = (parseInt(this.pagination.page, 10) - 1) * limit;
+      return ` LIMIT ${limit} OFFSET ${offset} `;
+    }
+    return '';
+  }
+
+  /**
    * Select data from database
    * @return {Object} - {query, queryParams}
    */
@@ -120,6 +145,25 @@ class SQLQueryBuilder {
 
     // Sorting
     query += this.getSortQuery();
+
+    // Paginating
+    query += this.getPaginationQuery();
+
+    return { query, queryParams };
+  }
+
+  /**
+   * Get row count for select query
+   * @return {Object} - {query, queryParams}
+   */
+  selectRowCountQuery() {
+    const { table } = this.config;
+
+    let query = `SELECT COUNT(*) AS totalrowcount FROM ${table} `;
+
+    // Filtering
+    const { query: filterQuery, queryParams } = this.getFilterQuery();
+    query += filterQuery;
 
     return { query, queryParams };
   }
@@ -190,6 +234,8 @@ class SQLQueryBuilder {
     switch (this.mode) {
       case MODE_SELECT:
         return this.selectQuery();
+      case MODE_SELECT_ROW_COUNT:
+        return this.selectRowCountQuery();
       case MODE_INSERT:
         return this.insertQuery();
       case MODE_UPDATE:
