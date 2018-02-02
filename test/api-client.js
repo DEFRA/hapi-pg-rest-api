@@ -18,20 +18,24 @@ const client = new APIClient(rp, {
   endpoint: 'http://localhost:8000/api/1.0/sessions',
 });
 
+const client2 = new APIClient(rp, {
+  endpoint: 'http://localhost:8000/api/1.0/{ip}/sessions',
+});
+
 let sessionId;
 let sessionId2;
 
 lab.experiment('Test APIClient', () => {
   // POST
   lab.test('The client should create a record', async () => {
-    const data = await client.create({
+    const { data } = await client.create({
       ip: '255.255.255.255',
       session_data: JSON.stringify({ api: 'test' }),
     });
     sessionId = data.session_id;
     Code.expect(sessionId).to.be.a.string();
 
-    const data2 = await client.create({
+    const { data: data2 } = await client.create({
       ip: '127.0.0.1',
       session_data: JSON.stringify({ api: 'test2' }),
     });
@@ -41,25 +45,32 @@ lab.experiment('Test APIClient', () => {
 
   // GET one
   lab.test('The client should find a single record', async () => {
-    const data = await client.findOne(sessionId);
+    const { data } = await client.findOne(sessionId);
     Code.expect(data.ip).to.equal('255.255.255.255');
   });
 
   // GET many
   lab.test('The client should find all records', async () => {
-    const data = await client.findMany();
+    const { data } = await client.findMany();
     Code.expect(data.length).to.be.greaterThan(0);
   });
 
+  // GET many with pagination
+  lab.test('The client should find all records', async () => {
+    const { data } = await client.findMany({}, {}, { page: 1, perPage: 1 });
+    Code.expect(data.length).to.equal(1);
+  });
+
+
   // GET many - filtered
   lab.test('The client should find records with filtering', async () => {
-    const data = await client.findMany({ session_id: sessionId });
+    const { data } = await client.findMany({ session_id: sessionId });
     Code.expect(data[0].session_id).to.equal(sessionId);
   });
 
   // Get many - sorted
   lab.test('The client should find records with sorting', async () => {
-    const data = await client.findMany({}, { session_id: 1 });
+    const { data } = await client.findMany({}, { session_id: 1 });
 
     const sessionIds = data.map(item => item.session_id);
     const sorted = sortBy(sessionIds);
@@ -69,7 +80,7 @@ lab.experiment('Test APIClient', () => {
 
   // Get many - sorted
   lab.test('The client should find records with reverse sorting', async () => {
-    const data = await client.findMany({}, { session_id: -1 });
+    const { data } = await client.findMany({}, { session_id: -1 });
 
     const sessionIds = data.map(item => item.session_id);
     const reverseSorted = sortBy(sessionIds).reverse();
@@ -77,11 +88,23 @@ lab.experiment('Test APIClient', () => {
     Code.expect(sessionIds.join(',')).to.equal(reverseSorted.join(','));
   });
 
+  // GET many with URL params
+  lab.test('The client should find all records with URL params', async () => {
+    const { data } = await client2.setParams({ ip: '127.0.0.1' }).findMany();
+
+    Code.expect(data).to.be.an.array();
+
+    data.forEach((row) => {
+      Code.expect(row.ip).to.equal('127.0.0.1');
+    });
+  });
+
+
   // PATCH one
   lab.test('The client should update a record', async () => {
     const { data, rowCount } = await client.updateOne(sessionId, { ip: '0.0.0.0' });
 
-    Code.expect(data).to.equal(null);
+    Code.expect(data.ip).to.equal('0.0.0.0');
     Code.expect(rowCount).to.equal(1);
   });
 
@@ -99,18 +122,14 @@ lab.experiment('Test APIClient', () => {
 
   // Test validation error handling
   lab.test('The client should throw an validation error', async () => {
-    try {
-      const data = await client.create({
-        non_existent_field: 'Invalid',
-      });
-    }
-    catch (error) {
-      Code.expect(error.name).to.equal('ValidationError');
-    }
+    const { error } = await client.create({
+      non_existent_field: 'Invalid',
+    });
+    Code.expect(error.name).to.equal('ValidationError');
   });
 
   // Test error handling
-  lab.test('The client should throw status errors from', async () => {
+  lab.test('The client should throw status errors', async () => {
     try {
       const client2 = new APIClient(rp, {
         endpoint: 'http://localhost:8000/api/1.0/session',

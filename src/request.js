@@ -50,6 +50,15 @@ class Request {
     if (sortError) {
       return sortError;
     }
+    // Validate pagination
+    if (result.pagination) {
+      const pSchema = { page: Joi.number().min(1), perPage: Joi.number().default(100).min(1) };
+      const { error: paginationError } = Joi.validate(result.pagination, pSchema);
+      if (paginationError) {
+        return new ValidationError('Pagination must contain keys \'page\' and \'perPage\' with integer values');
+      }
+    }
+
 
     return null;
   }
@@ -60,6 +69,8 @@ class Request {
    * @return {Object} - processed data with {filter, sort, data}
    */
   processRequest(request) {
+    const { primaryKey, pagination } = this.config;
+
     const result = {
       // Data for create/update
       data: request.payload || {},
@@ -67,9 +78,9 @@ class Request {
       filter: {},
       // Sorting data
       sort: {},
+      // Paginate data
+      pagination,
     };
-
-    const { primaryKey } = this.config;
 
     if ('id' in request.params) {
       result.filter[primaryKey] = request.params.id;
@@ -90,6 +101,14 @@ class Request {
       }
       catch (e) {
         throw new ValidationError('Sort must be valid JSON');
+      }
+    }
+    if ('pagination' in request.query) {
+      try {
+        result.pagination = JSON.parse(request.query.pagination);
+      }
+      catch (e) {
+        throw new ValidationError('Pagination must be valid JSON');
       }
     }
 

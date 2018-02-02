@@ -5,16 +5,18 @@ module.exports = pool => new HAPIRestAPI({
   table: 'sessions',
   connection: pool,
   primaryKey: 'session_id',
-  endpoint: '/api/1.0/sessions',
+  endpoint: '/api/1.0/{ip}/sessions',
   onCreateTimestamp: 'date_created',
   onUpdateTimestamp: 'date_updated',
+  preQuery: (result, hapiRequest) => {
+    result.filter.ip = hapiRequest.params.ip;
+    result.data.ip = hapiRequest.params.ip;
+    return result;
+  },
   upsert: {
     fields: ['session_id'],
     set: ['session_data'],
   },
-  postSelect: data => data.map((row, i) =>
-    // Add a calculated field to data output
-    ({ added_field: `ROW-${i}`, ...row })),
   validation: {
     session_id: Joi.string().guid(),
     ip: Joi.string(),

@@ -30,7 +30,14 @@ function HAPIRestAPI(config) {
     preInsert: data => data,
     preUpdate: data => data,
     preQuery: result => result,
+    postSelect: data => data,
     upsert: null,
+    primaryKeyAuto: false,
+    primaryKeyGuid: true,
+    pagination: {
+      page: 1,
+      perPage: 100,
+    },
   }, config);
 
   // Create request processor instance
@@ -51,8 +58,6 @@ function HAPIRestAPI(config) {
    * @param {Object} reply - HAPI HTTP reply interface
    */
   this.errorReply = (error, reply) => {
-    // console.error(error);
-
     // Validation error is a bad request - 400
     if (error.name === 'ValidationError') {
       return reply({ error, data: null }).code(400);
@@ -74,29 +79,59 @@ function HAPIRestAPI(config) {
 
 
   /**
+   * Get pagination info for paginated request
+   * Includes total row count and number of pages
+   * @param {Object} request - internal request object
+   * @return {Object} pagination info
+   */
+  this.getPagination = async (request) => {
+    const q = new Query(config);
+    const { query, queryParams } = q.selectRowCount()
+      .setFilter(request.filter)
+      .getQuery();
+
+    const result = await this.dbQuery(query, queryParams);
+    const totalRows = parseInt(result.rows[0].totalrowcount, 10);
+
+    return {
+      ...request.pagination,
+      totalRows,
+      pageCount: Math.ceil(totalRows / request.pagination.perPage),
+    };
+  };
+
+
+  /**
    * Find one/many results
    */
   this.find = async (hapiRequest, reply, isMany = false) => {
     try {
-      const request = this.request.processRequest(hapiRequest);
+      const request = await this.request.processRequest(hapiRequest);
 
       const q = new Query(config);
 
       const { query, queryParams } = q.select()
         .setFilter(request.filter)
         .setSort(request.sort)
+        .setPagination(request.pagination)
         .getQuery();
 
       const result = await this.dbQuery(query, queryParams);
 
       if (isMany) {
-        return reply({ data: result.rows, error: null });
+        const replyData = { data: this.config.postSelect(result.rows), error: null };
+
+        if (request.pagination) {
+          replyData.pagination = await this.getPagination(request);
+        }
+
+        return reply(replyData);
       }
       else if (result.rows.length !== 1) {
         throw new NotFoundError('Query must return exactly 1 row');
       }
       else {
-        return reply({ data: result.rows[0], error: null });
+        return reply({ data: this.config.postSelect(result.rows)[0], error: null });
       }
     }
     catch (error) {
@@ -136,11 +171,15 @@ function HAPIRestAPI(config) {
 
     try {
       const q = new Query(config);
-      const command = this.request.processRequest(hapiRequest);
+      const command = await this.request.processRequest(hapiRequest);
 
       // Call pre-insert hook
-      const data = this.config.preInsert(command.data);
-      data[primaryKey] = uuidV4();
+      const data = await this.config.preInsert(command.data);
+
+      // Auto-generate primary key
+      if (!this.config.primaryKeyAuto && this.config.primaryKeyGuid) {
+        data[primaryKey] = uuidV4();
+      }
 
       // Set on create timestamp
       if (this.config.onCreateTimestamp) {
@@ -151,8 +190,8 @@ function HAPIRestAPI(config) {
         .setData(data)
         .getQuery();
 
-      await this.dbQuery(query, queryParams);
-      return reply({ data, error: null }).code(201);
+      const result = await this.dbQuery(query, queryParams);
+      return reply({ data: result.rows[0], error: null }).code(201);
     }
     catch (error) {
       return this.errorReply(error, reply);
@@ -163,10 +202,10 @@ function HAPIRestAPI(config) {
   this.update = async (hapiRequest, reply, isMany) => {
     try {
       const q = new Query(config);
-      const command = this.request.processRequest(hapiRequest);
+      const command = await this.request.processRequest(hapiRequest);
 
       // Call pre-update hook
-      const data = this.config.preUpdate(command.data);
+      const data = await this.config.preUpdate(command.data);
 
       // Set on update timestamp
       if (this.config.onUpdateTimestamp) {
@@ -178,10 +217,11 @@ function HAPIRestAPI(config) {
         .setFilter(command.filter)
         .getQuery();
 
-      const { rowCount } = await this.dbQuery(query, queryParams);
+      const { rowCount, rows } = await this.dbQuery(query, queryParams);
 
       if (isMany || (rowCount === 1)) {
-        return reply({ data: null, error: null, rowCount });
+        const returnData = isMany ? null : rows[0];
+        return reply({ data: returnData, error: null, rowCount });
       }
 
       throw new NotFoundError('Query must update exactly 1 row');
@@ -230,7 +270,7 @@ function HAPIRestAPI(config) {
   this.delete = async (hapiRequest, reply) => {
     try {
       const q = new Query(config);
-      const command = this.request.processRequest(hapiRequest);
+      const command = await this.request.processRequest(hapiRequest);
 
       const { query, queryParams } = q.delete()
         .setFilter(command.filter)

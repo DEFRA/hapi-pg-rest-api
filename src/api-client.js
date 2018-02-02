@@ -3,6 +3,7 @@
  * @module api-client
  * @class APIClient
  */
+const forEach = require('lodash/forEach');
 
 class APIClient {
   /**
@@ -17,6 +18,31 @@ class APIClient {
     };
     this.config = Object.assign({}, defaults, config);
     this.rp = rp;
+    this.urlParams = {};
+  }
+
+
+  /**
+   * Sets context, e.g. when endpoint is like /api/{someId}/entity/{id}
+   * @param {Object} URL context params
+   */
+  setParams(urlParams = {}) {
+    this.urlParams = urlParams;
+    return this;
+  }
+
+  /**
+   * Get URL for call
+   * @param {Mixed} [id] - the ID of the entity to get/update/delete
+   * @return {String} URL
+   */
+  getUrl(id) {
+    let url = id ? `${this.config.endpoint}/${id}` : this.config.endpoint;
+    // Replace context params in URL
+    forEach(this.urlParams, (val, key) => {
+      url = url.replace(`{${key}}`, val);
+    });
+    return url;
   }
 
   /**
@@ -26,7 +52,7 @@ class APIClient {
    */
   async create(body) {
     return this.makeRequest({
-      uri: this.config.endpoint,
+      uri: this.getUrl(),
       method: 'POST',
       body,
       headers: this.config.headers,
@@ -41,7 +67,7 @@ class APIClient {
    */
   async findOne(id) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}/${id}`,
+      uri: this.getUrl(id),
       method: 'GET',
       headers: this.config.headers,
       json: true,
@@ -52,16 +78,22 @@ class APIClient {
    * Find many records
    * @param {Object} filter
    * @param {Object} sort
+   * @param {Object} pagination - e.g. {page : 5, perPage, 20}
    */
-  async findMany(filter = {}, sort = {}) {
+  async findMany(filter = {}, sort = {}, pagination = null) {
+    const qs = {
+      filter: JSON.stringify(filter),
+      sort: JSON.stringify(sort),
+    };
+    if (pagination) {
+      qs.pagination = JSON.stringify(pagination);
+    }
+
     return this.makeRequest({
-      uri: `${this.config.endpoint}`,
+      uri: this.getUrl(),
       method: 'GET',
       headers: this.config.headers,
-      qs: {
-        filter: JSON.stringify(filter),
-        sort: JSON.stringify(sort),
-      },
+      qs,
       json: true,
     });
   }
@@ -74,7 +106,7 @@ class APIClient {
    */
   async updateOne(id, body) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}/${id}`,
+      uri: this.getUrl(id),
       method: 'PATCH',
       headers: this.config.headers,
       body,
@@ -90,7 +122,7 @@ class APIClient {
    */
   async updateMany(filter, body) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}`,
+      uri: this.getUrl(),
       method: 'PATCH',
       headers: this.config.headers,
       body,
@@ -106,7 +138,7 @@ class APIClient {
     */
   async delete(id) {
     return this.makeRequest({
-      uri: `${this.config.endpoint}/${id}`,
+      uri: this.getUrl(id),
       method: 'DELETE',
       headers: this.config.headers,
       json: true,
@@ -119,21 +151,15 @@ class APIClient {
    */
   async makeRequest(options) {
     try {
-      const { data, rowCount } = await this.rp(options);
-      if (typeof (rowCount) === 'number') {
-        return { data, rowCount };
-      }
-      return data;
+      return await this.rp(options);
     }
     catch (error) {
       // API error
       if (error.error.error.name) {
-        throw error.error.error;
+        return { data: null, error: error.error.error };
       }
       // Rethrow other error
-      else {
-        throw error;
-      }
+      throw error;
     }
   }
 }
