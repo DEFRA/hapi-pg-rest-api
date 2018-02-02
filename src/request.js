@@ -69,6 +69,8 @@ class Request {
    * @return {Object} - processed data with {filter, sort, data}
    */
   processRequest(request) {
+    const { primaryKey, pagination } = this.config;
+
     const result = {
       // Data for create/update
       data: request.payload || {},
@@ -77,10 +79,8 @@ class Request {
       // Sorting data
       sort: {},
       // Paginate data
-      paginate: null,
+      pagination,
     };
-
-    const { primaryKey } = this.config;
 
     if ('id' in request.params) {
       result.filter[primaryKey] = request.params.id;

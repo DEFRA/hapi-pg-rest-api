@@ -34,6 +34,10 @@ function HAPIRestAPI(config) {
     upsert: null,
     primaryKeyAuto: false,
     primaryKeyGuid: true,
+    pagination: {
+      page: 1,
+      perPage: 100,
+    },
   }, config);
 
   // Create request processor instance

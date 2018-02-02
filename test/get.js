@@ -97,6 +97,9 @@ lab.experiment('Test GET entity/entities', () => {
 
     Code.expect(payload.error).to.equal(null);
     Code.expect(payload.data).to.be.an.array();
+    Code.expect(payload.pagination.page).to.equal(1);
+    Code.expect(payload.pagination.perPage).to.equal(100);
+
 
     // Check calculated field
     Code.expect(payload.data[0].added_field).to.equal('ROW-0');
