@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/DEFRA/hapi-pg-rest-api.svg?branch=master)](https://travis-ci.org/DEFRA/hapi-pg-rest-api)
 [![Test Coverage](https://codecov.io/gh/DEFRA/hapi-pg-rest-api/branch/master/graphs/badge.svg)](https://codecov.io/gh/DEFRA/hapi-pg-rest-api)
+[![Known Vulnerabilities](https://snyk.io/test/github/defra/hapi-pg-rest-api/badge.svg?targetFile=package.json)](https://snyk.io/test/github/defra/hapi-pg-rest-api?targetFile=package.json)
 
 # HAPI REST API
 
