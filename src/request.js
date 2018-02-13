@@ -4,9 +4,11 @@
  * @class Request
  */
 const Joi = require('joi');
-const mapValues = require('lodash/mapValues');
+const { mapValues, isArray } = require('lodash');
+const objectWalk = require('object-walk');
 const omit = require('lodash/omit');
 const { ValidationError } = require('./errors.js');
+
 
 class Request {
   /**
@@ -20,6 +22,30 @@ class Request {
 
 
   /**
+   * Given that a filter query may now contain method params, e.g.
+   * { $or : ['x', 'y']}, we need to walk over this object and get all values
+   * from the leaf nodes of this object
+   * @param {Object} filter, eg {field : 'value'}
+   * @return {Object} filter with mongo-style queries converted to an array of values
+   */
+  static getFilterValues(filter) {
+    return mapValues(filter, (value) => {
+      if (typeof (value) !== 'object' || isArray(value) || value === null) {
+        return value;
+      }
+      const values = [];
+      objectWalk(value, (val) => {
+        // Scalars
+        if (typeof (val) !== 'object') {
+          values.push(val);
+        }
+      });
+      return values;
+    });
+  }
+
+
+  /**
    * Validates request result
    * the result is in the form {filter, data, sort}
    * @param {Object} result - the processed result object
@@ -28,9 +54,11 @@ class Request {
    * @param {Object} result.data - create/update data
    */
   validate(result) {
+    const filterValues = Request.getFilterValues(result.filter);
+
     // Validate filter
     const fSchema = mapValues(this.config.validation, value => [value, Joi.array().items(value)]);
-    const { error: filterError } = Joi.validate(result.filter, fSchema);
+    const { error: filterError } = Joi.validate(filterValues, fSchema);
     if (filterError) {
       return filterError;
     }
@@ -58,6 +86,16 @@ class Request {
         return new ValidationError('Pagination must contain keys \'page\' and \'perPage\' with integer values');
       }
     }
+    // Validate columns
+    if (result.columns) {
+      const cSchema = {
+        columns: Joi.array().items(Joi.string().valid(Object.keys(this.config.validation))),
+      };
+      const { error: columnError } = Joi.validate({ columns: result.columns }, cSchema);
+      if (columnError) {
+        return new ValidationError('Invalid column specification');
+      }
+    }
 
 
     return null;
@@ -80,6 +118,8 @@ class Request {
       sort: {},
       // Paginate data
       pagination,
+      // Columns (default is select * )
+      columns: null,
     };
 
     if ('id' in request.params) {
@@ -109,6 +149,14 @@ class Request {
       }
       catch (e) {
         throw new ValidationError('Pagination must be valid JSON');
+      }
+    }
+    if ('columns' in request.query) {
+      try {
+        result.columns = request.query.columns.split(',');
+      }
+      catch (e) {
+        throw new ValidationError('Columns must be valid JSON');
       }
     }
 

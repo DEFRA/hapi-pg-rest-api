@@ -13,10 +13,12 @@
   "author": "",
   "license": "OGLv3",
   "dependencies": {
+    "joi": "^13.1.0",
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
-    "uuid": "^3.1.0",
-    "joi": "^13.1.0"
+    "mongo-sql": "^5.0.0",
+    "object-walk": "^0.1.1",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "blipp": "^2.3.0",
