@@ -4,6 +4,8 @@
 
 # HAPI REST API
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/DEFRA/hapi-pg-rest-api.svg)](https://greenkeeper.io/)
+
 A module to create a simple REST API in a HAPI application connected to a particular Postgres DB table.
 
 ## Contributing to this project
