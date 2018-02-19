@@ -43,10 +43,29 @@ lab.experiment('Test APIClient', () => {
     Code.expect(sessionId2).to.be.a.string();
   });
 
+
+  // POST
+  lab.test('The client should create a record and only return certain columns', async () => {
+    const { data } = await client.create({
+      ip: '255.255.255.255',
+      session_data: JSON.stringify({ api: 'test' }),
+    }, ['ip']);
+
+    const keys = Object.keys(data);
+    Code.expect(keys).to.equal(['ip']);
+  });
+
+
   // GET one
   lab.test('The client should find a single record', async () => {
     const { data } = await client.findOne(sessionId);
     Code.expect(data.ip).to.equal('255.255.255.255');
+  });
+
+
+  lab.test('The client should find a single record and only select certain fields', async () => {
+    const { data } = await client.findOne(sessionId, ['session_data']);
+    Code.expect(Object.keys(data)).to.equal(['added_field', 'session_data']);
   });
 
   // GET many
@@ -54,6 +73,18 @@ lab.experiment('Test APIClient', () => {
     const { data } = await client.findMany();
     Code.expect(data.length).to.be.greaterThan(0);
   });
+
+  lab.test('The client should find all records and only select certain fields', async () => {
+    const { data } = await client.findMany({}, {}, null, ['session_data']);
+    Code.expect(Object.keys(data[0])).to.equal(['added_field', 'session_data']);
+  });
+
+  lab.test('The client should paginate results', async () => {
+    const { data, pagination } = await client.findMany({}, {}, { perPage: 1, page: 2 });
+    Code.expect(pagination.page).to.equal(2);
+    Code.expect(data.length).to.equal(1);
+  });
+
 
   // GET many with pagination
   lab.test('The client should find all records', async () => {
@@ -110,14 +141,13 @@ lab.experiment('Test APIClient', () => {
 
   // PATCH many
   lab.test('The client should update many records', async () => {
-    const { rowCount, data } = await client.updateMany({ session_id: [sessionId, sessionId2] }, { ip: '0.0.0.0' });
+    const { rowCount, data } = await client.updateMany({ session_id: { $or: [sessionId, sessionId2] } }, { ip: '0.0.0.0' });
     Code.expect(rowCount).to.equal(2);
   });
 
   // DELETE one
   lab.test('The client should delete a record', async () => {
     const res = await client.delete(sessionId);
-    console.log(res);
   });
 
   // Test validation error handling

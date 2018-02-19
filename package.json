@@ -1,6 +1,6 @@
 {
   "name": "hapi-pg-rest-api",
-  "version": "1.0.12",
+  "version": "2.0.0",
   "description": "Creates simple RESTful API routes in a HAPI application linked to a Postgres DB table ",
   "main": "index.js",
   "scripts": {

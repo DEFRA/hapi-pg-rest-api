@@ -60,7 +60,7 @@ function HAPIRestAPI(config) {
    * @param {Object} reply - HAPI HTTP reply interface
    */
   this.errorReply = (error, reply) => {
-    console.log(error);
+    console.error(error);
     // Validation error is a bad request - 400
     if (error.name === 'ValidationError') {
       return reply({ error, data: null }).code(400);
@@ -177,7 +177,7 @@ function HAPIRestAPI(config) {
         data[this.config.onCreateTimestamp] = moment().format('YYYY-MM-DD HH:mm:ss');
       }
 
-      const result = await this.repo.create(data);
+      const result = await this.repo.create(data, command.columns);
 
       return reply({ data: result.rows[0], error: null }).code(201);
     }

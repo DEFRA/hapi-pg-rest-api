@@ -48,45 +48,60 @@ class APIClient {
   /**
    * Create record
    * @param {Object} data - the model data to post
+   * @param {Array} [columns] - the columns to return on insert
    * @return {Promise} - resolves with new row data on success
    */
-  async create(body) {
+  async create(body, columns = null) {
+    const qs = columns ? {
+      columns: columns.join(','),
+    } : null;
     return this.makeRequest({
       uri: this.getUrl(),
       method: 'POST',
       body,
       headers: this.config.headers,
       json: true,
+      qs,
     });
   }
 
   /**
    * Find one record
    * @param {String} id
+   * @param {Array} [columns] - an array containing column names to select
    * @return {Promise} resolves with single record if found
    */
-  async findOne(id) {
+  async findOne(id, columns = null) {
+    const qs = columns ? {
+      columns: columns.join(','),
+    } : null;
+
     return this.makeRequest({
       uri: this.getUrl(id),
       method: 'GET',
       headers: this.config.headers,
       json: true,
+      qs,
     });
   }
 
   /**
    * Find many records
-   * @param {Object} filter
-   * @param {Object} sort
-   * @param {Object} pagination - e.g. {page : 5, perPage, 20}
+   * @param {Object} [filter] an object describing which fields to query
+   * @param {Object} [sort] an object describing which fields to sort on
+   * @param {Object} [pagination] - e.g. {page : 5, perPage, 20}
+   * @param {Array} [columns] - an array containing field names to select
    */
-  async findMany(filter = {}, sort = {}, pagination = null) {
+  async findMany(filter = {}, sort = {}, pagination = null, columns = null) {
     const qs = {
       filter: JSON.stringify(filter),
       sort: JSON.stringify(sort),
     };
     if (pagination) {
       qs.pagination = JSON.stringify(pagination);
+    }
+    if (columns) {
+      qs.columns = columns.join(',');
     }
 
     return this.makeRequest({
@@ -102,15 +117,20 @@ class APIClient {
    * Update one record
    * @param {String} id - the primary key value
    * @param {Object} body - the data to update
+   * @param {Array} [columns] - the columns to select
    * @return {Promise} - resolves with API response
    */
-  async updateOne(id, body) {
+  async updateOne(id, body, columns = null) {
+    const qs = columns ? {
+      columns: columns.join(','),
+    } : null;
     return this.makeRequest({
       uri: this.getUrl(id),
       method: 'PATCH',
       headers: this.config.headers,
       body,
       json: true,
+      qs,
     });
   }
 

@@ -20,7 +20,6 @@ class Repository {
    * @return {Promise} resolves with PostGres result
    */
   dbQuery(query, queryParams) {
-    console.log(query, queryParams);
     return this.config.connection.query(query, queryParams);
   }
 
@@ -47,11 +46,8 @@ class Repository {
       type: 'select',
       table,
       columns: ['COUNT(*) AS totalrowcount'],
+      where: filter,
     };
-
-    if (filter && Object.keys(filter).length) {
-      query.where = filter;
-    }
 
     const result = builder.sql(query);
     return this.dbQuery(result.toString(), result.values);
@@ -73,14 +69,9 @@ class Repository {
       type: 'select',
       table,
       limit: 10,
+      where: filter,
+      order: Repository.mapSort(sort),
     };
-
-    if (filter && Object.keys(filter).length) {
-      query.where = filter;
-    }
-    if (sort) {
-      query.order = Repository.mapSort(sort);
-    }
     if (columns) {
       query.columns = columns;
     }
@@ -95,9 +86,10 @@ class Repository {
   /**
    * Create a record
    * @param {Object} data
+   * @param {Array} [columns] - columns to return during insert
    * @return {Promise} resolves with db result
    */
-  create(data) {
+  create(data, columns = null) {
     const { table, upsert } = this.config;
     const fields = Object.keys(data);
     const queryParams = Object.values(data);
@@ -110,7 +102,8 @@ class Repository {
       query += ` ON CONFLICT (${upsert.fields.join(',')}) DO UPDATE SET ${parts.join(',')}`;
     }
 
-    query += ' RETURNING * ';
+    query += ` RETURNING ${columns ? `"${columns.join('","')}"` : '*'}`;
+
 
     return this.dbQuery(query, queryParams);
   }
