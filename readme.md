@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/DEFRA/hapi-pg-rest-api.svg?branch=master)](https://travis-ci.org/DEFRA/hapi-pg-rest-api)
 [![Test Coverage](https://codecov.io/gh/DEFRA/hapi-pg-rest-api/branch/master/graphs/badge.svg)](https://codecov.io/gh/DEFRA/hapi-pg-rest-api)
 [![Known Vulnerabilities](https://snyk.io/test/github/defra/hapi-pg-rest-api/badge.svg?targetFile=package.json)](https://snyk.io/test/github/defra/hapi-pg-rest-api?targetFile=package.json)
+[![NSP Status](https://nodesecurity.io/orgs/cruikshanks/projects/4efa78e7-9f10-402e-b0fc-32e4e895d9dd/badge)](https://nodesecurity.io/orgs/cruikshanks/projects/4efa78e7-9f10-402e-b0fc-32e4e895d9dd)
+[![Maintainability](https://api.codeclimate.com/v1/badges/f09ab6459489426d9e88/maintainability)](https://codeclimate.com/github/DEFRA/hapi-pg-rest-api/maintainability)
 
 # HAPI REST API
 
