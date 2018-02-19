@@ -107,7 +107,10 @@ function HAPIRestAPI(config) {
       const request = await this.request.processRequest(hapiRequest);
 
       // Get data
-      const result = await this.repo.find(request.filter, request.sort, request.pagination, request.columns);
+      const result = await this.repo.find(
+        request.filter, request.sort,
+        request.pagination, request.columns,
+      );
 
       if (isMany) {
         const replyData = { data: this.config.postSelect(result.rows), error: null };
@@ -265,74 +268,135 @@ function HAPIRestAPI(config) {
     }
   };
 
+
+  /**
+   * Get HAPI API handler for GET single record
+   * @return Object
+   */
+  this.findManyRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'GET',
+      path: endpoint,
+      handler: this.findMany,
+      config: {
+        description: `Get many ${table} records`,
+      },
+    };
+  };
+
+  /**
+   * Get HAPI API handler for GET single record
+   * @return Object
+   */
+  this.findOneRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'GET',
+      path: `${endpoint}/{id}`,
+      handler: this.findOne,
+      config: {
+        description: `Get single ${table} record`,
+      },
+    };
+  };
+
+  /**
+   * Get HAPI API handler for POST new record
+   * @return Object
+   */
+  this.createRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'POST',
+      path: endpoint,
+      handler: this.create,
+      config: {
+        description: `Create new ${table} record`,
+      },
+    };
+  };
+
+  /**
+   * Get HAPI API handler for PATCH single record
+   * @return Object
+   */
+  this.updateOneRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'PATCH',
+      path: `${endpoint}/{id}`,
+      handler: this.updateOne,
+      config: {
+        description: `Patch single ${table} record`,
+      },
+    };
+  };
+
+
+  /**
+   * Get HAPI API handler for PUT single record
+   * @return Object
+   */
+  this.replaceOneRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'PUT',
+      path: `${endpoint}/{id}`,
+      handler: this.replace,
+      config: {
+        description: `Replace single ${table} record`,
+      },
+    };
+  };
+
+
+  /**
+   * Get HAPI API handler for DELETE single record
+   * @return Object
+   */
+  this.deleteOneRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'DELETE',
+      path: `${endpoint}/{id}`,
+      handler: this.delete,
+      config: {
+        description: `Delete single ${table}record`,
+      },
+    };
+  };
+
+
+  /**
+   * Get HAPI API handler for PATCH many records
+   * @return Object
+   */
+  this.updateManyRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'PATCH',
+      path: `${endpoint}`,
+      handler: this.updateMany,
+      config: {
+        description: `Patch many ${table} records`,
+      },
+    };
+  };
+
   /**
    * Get HAPI route config for API
    * @return {Array} - HAPI route config
    */
-  this.getRoutes = () => {
-    const {
-      endpoint, table,
-    } = this.config;
-
-    return [
-      {
-        method: 'GET',
-        path: endpoint,
-        handler: this.findMany,
-        config: {
-          description: `Get many ${table} records`,
-        },
-      },
-      {
-        method: 'GET',
-        path: `${endpoint}/{id}`,
-        handler: this.findOne,
-        config: {
-          description: `Get single ${table} record`,
-        },
-      },
-      {
-        method: 'POST',
-        path: endpoint,
-        handler: this.create,
-        config: {
-          description: `Create new ${table} record`,
-        },
-      },
-      {
-        method: 'PATCH',
-        path: `${endpoint}/{id}`,
-        handler: this.updateOne,
-        config: {
-          description: `Patch single ${table} record`,
-        },
-      },
-      {
-        method: 'PUT',
-        path: `${endpoint}/{id}`,
-        handler: this.replace,
-        config: {
-          description: `Replace single ${table} record`,
-        },
-      },
-      {
-        method: 'DELETE',
-        path: `${endpoint}/{id}`,
-        handler: this.delete,
-        config: {
-          description: `Delete single ${table}record`,
-        },
-      },
-      {
-        method: 'PATCH',
-        path: `${endpoint}`,
-        handler: this.updateMany,
-        config: {
-          description: `Patch many ${table} records`,
-        },
-      },
-    ];
-  };
+  this.getRoutes = () => [
+    this.findManyRoute(),
+    this.findOneRoute(),
+    this.createRoute(),
+    this.updateOneRoute(),
+    this.replaceOneRoute(),
+    this.deleteOneRoute(),
+    this.updateManyRoute(),
+  ];
 }
 
 
