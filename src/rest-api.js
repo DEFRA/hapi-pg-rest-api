@@ -7,7 +7,7 @@ const moment = require('moment');
 const uuidV4 = require('uuid/v4');
 const { ConfigError, NotFoundError } = require('./errors');
 const Request = require('./request.js');
-const Query = require('./query.js');
+const Repository = require('./repository.js');
 
 /**
  * @param {Object} config - configuration options
@@ -40,6 +40,8 @@ function HAPIRestAPI(config) {
     },
   }, config);
 
+  this.repo = new Repository(this.config);
+
   // Create request processor instance
   this.request = new Request(this.config);
 
@@ -58,6 +60,7 @@ function HAPIRestAPI(config) {
    * @param {Object} reply - HAPI HTTP reply interface
    */
   this.errorReply = (error, reply) => {
+    console.error(error);
     // Validation error is a bad request - 400
     if (error.name === 'ValidationError') {
       return reply({ error, data: null }).code(400);
@@ -85,12 +88,7 @@ function HAPIRestAPI(config) {
    * @return {Object} pagination info
    */
   this.getPagination = async (request) => {
-    const q = new Query(config);
-    const { query, queryParams } = q.selectRowCount()
-      .setFilter(request.filter)
-      .getQuery();
-
-    const result = await this.dbQuery(query, queryParams);
+    const result = await this.repo.findRowCount(request.filter);
     const totalRows = parseInt(result.rows[0].totalrowcount, 10);
 
     return {
@@ -108,15 +106,8 @@ function HAPIRestAPI(config) {
     try {
       const request = await this.request.processRequest(hapiRequest);
 
-      const q = new Query(config);
-
-      const { query, queryParams } = q.select()
-        .setFilter(request.filter)
-        .setSort(request.sort)
-        .setPagination(request.pagination)
-        .getQuery();
-
-      const result = await this.dbQuery(query, queryParams);
+      // Get data
+      const result = await this.repo.find(request.filter, request.sort, request.pagination, request.columns);
 
       if (isMany) {
         const replyData = { data: this.config.postSelect(result.rows), error: null };
@@ -135,6 +126,7 @@ function HAPIRestAPI(config) {
       }
     }
     catch (error) {
+      // console.log(error);
       return this.errorReply(error, reply);
     }
   };
@@ -170,7 +162,6 @@ function HAPIRestAPI(config) {
     const { primaryKey } = this.config;
 
     try {
-      const q = new Query(config);
       const command = await this.request.processRequest(hapiRequest);
 
       // Call pre-insert hook
@@ -186,11 +177,8 @@ function HAPIRestAPI(config) {
         data[this.config.onCreateTimestamp] = moment().format('YYYY-MM-DD HH:mm:ss');
       }
 
-      const { query, queryParams } = q.insert()
-        .setData(data)
-        .getQuery();
+      const result = await this.repo.create(data, command.columns);
 
-      const result = await this.dbQuery(query, queryParams);
       return reply({ data: result.rows[0], error: null }).code(201);
     }
     catch (error) {
@@ -201,7 +189,6 @@ function HAPIRestAPI(config) {
 
   this.update = async (hapiRequest, reply, isMany) => {
     try {
-      const q = new Query(config);
       const command = await this.request.processRequest(hapiRequest);
 
       // Call pre-update hook
@@ -212,12 +199,7 @@ function HAPIRestAPI(config) {
         data[this.config.onUpdateTimestamp] = moment().format('YYYY-MM-DD HH:mm:ss');
       }
 
-      const { query, queryParams } = q.update()
-        .setData(data)
-        .setFilter(command.filter)
-        .getQuery();
-
-      const { rowCount, rows } = await this.dbQuery(query, queryParams);
+      const { rowCount, rows } = await this.repo.update(command.filter, data);
 
       if (isMany || (rowCount === 1)) {
         const returnData = isMany ? null : rows[0];
@@ -269,14 +251,9 @@ function HAPIRestAPI(config) {
    */
   this.delete = async (hapiRequest, reply) => {
     try {
-      const q = new Query(config);
       const command = await this.request.processRequest(hapiRequest);
 
-      const { query, queryParams } = q.delete()
-        .setFilter(command.filter)
-        .getQuery();
-
-      const { rowCount } = await this.dbQuery(query, queryParams);
+      const { rowCount } = await this.repo.delete(command.filter);
 
       if (rowCount > 0) {
         return reply({ data: null, error: null, rowCount });
