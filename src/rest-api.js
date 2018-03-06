@@ -9,6 +9,8 @@ const { ConfigError, NotFoundError } = require('./errors');
 const Request = require('./request.js');
 const Repository = require('./repository.js');
 const { mapValues } = require('lodash');
+// @source {@link https://stackoverflow.com/questions/7905929/how-to-test-valid-uuid-guid}
+const guidRegex = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
 
 /**
  * @param {Object} config - configuration options
@@ -281,17 +283,53 @@ function HAPIRestAPI(config) {
     } = this.config;
 
     const required = [];
-    const properties = mapValues(this.config.validation, (value, key) => ({
-      type: value._type,
-    }));
+    const properties = mapValues(this.config.validation, (value, key) => {
+      // Required fields
+      if (value._flags.presence === 'required') {
+        required.push(key);
+      }
+      const field = {
+        type: value._type,
+      };
 
-    const schema = {
+      // Joi Tests
+      value._tests.forEach((test) => {
+        if (test.name === 'min') {
+          field.minLength = test.arg;
+        }
+        if (test.name === 'max') {
+          field.maxLength = test.arg;
+        }
+        if (test.name === 'email') {
+          field.format = 'email';
+        }
+        if (test.name === 'guid') {
+          field.pattern = guidRegex;
+        }
+      });
+
+      return field;
+    });
+
+
+    const jsonSchema = {
       title: table,
       type: 'object',
       properties,
       required,
     };
-    reply(schema);
+
+    reply({
+      error: null,
+      data: {
+        jsonSchema,
+        config: {
+          primaryKey,
+          primaryKeyAuto,
+          primaryKeyGuid,
+        },
+      },
+    });
   };
 
 

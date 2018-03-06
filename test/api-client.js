@@ -26,6 +26,16 @@ let sessionId;
 let sessionId2;
 
 lab.experiment('Test APIClient', () => {
+  // GET schema
+  lab.test('The client should get the API schema', async () => {
+    const { data } = await client.schema();
+
+
+    Code.expect(data.jsonSchema).to.be.an.object();
+    Code.expect(data.config).to.be.an.object();
+  });
+
+
   // POST
   lab.test('The client should create a record', async () => {
     const { data } = await client.create({
