@@ -34,9 +34,14 @@ class Request {
         return value;
       }
       const values = [];
-      objectWalk(value, (val) => {
+      objectWalk(value, (val, key) => {
         // Scalars
         if (typeof (val) !== 'object') {
+          // When using like/ilike, skip field validation as the value is only
+          // partial
+          if (key.match(/^\$i?like$/i)) {
+            return;
+          }
           values.push(val);
         }
       });

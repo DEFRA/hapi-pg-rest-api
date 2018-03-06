@@ -21,5 +21,6 @@ module.exports = pool => new HAPIRestAPI({
     session_data: Joi.string(),
     date_created: Joi.string(),
     date_updated: Joi.string().allow(null),
+    email: Joi.string().email(),
   },
 });
