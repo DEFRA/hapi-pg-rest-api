@@ -20,6 +20,7 @@ lab.experiment('Test GET entity/entities', () => {
       payload: {
         ip: '127.0.0.1',
         session_data: JSON.stringify({ username: 'bob' }),
+        email: 'mail@example.com',
       },
     };
 
@@ -152,6 +153,25 @@ lab.experiment('Test GET entity/entities', () => {
       url: `/api/1.0/sessions?filter=${JSON.stringify({
         date_created: {
           $gt: '2018-01-01',
+        },
+      })}`,
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(200);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+
+    Code.expect(payload.error).to.equal(null);
+  });
+
+  lab.test('The API should filter records using $ilike for partial match on email field', async () => {
+    const request = {
+      method: 'GET',
+      url: `/api/1.0/sessions?filter=${JSON.stringify({
+        email: {
+          $ilike: '%example.com',
         },
       })}`,
     };

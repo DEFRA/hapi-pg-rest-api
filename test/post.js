@@ -15,6 +15,7 @@ lab.experiment('Test POST entity creation', () => {
       payload: {
         ip: '127.0.0.1',
         session_data: JSON.stringify({ username: 'bob' }),
+        email: 'mail@example.com',
       },
     };
 
