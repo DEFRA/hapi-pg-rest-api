@@ -8,6 +8,7 @@ const uuidV4 = require('uuid/v4');
 const { ConfigError, NotFoundError } = require('./errors');
 const Request = require('./request.js');
 const Repository = require('./repository.js');
+const { mapValues } = require('lodash');
 
 /**
  * @param {Object} config - configuration options
@@ -270,6 +271,31 @@ function HAPIRestAPI(config) {
 
 
   /**
+   * Get schema definition
+   * @param {Object} hapiRequest - the HAPI request instance
+   * @return {Object} reply - the HAPI reply interface
+   */
+  this.schemaDefinition = async (hapiRequest, reply) => {
+    const {
+      table, primaryKey, primaryKeyAuto, primaryKeyGuid,
+    } = this.config;
+
+    const required = [];
+    const properties = mapValues(this.config.validation, (value, key) => ({
+      type: value._type,
+    }));
+
+    const schema = {
+      title: table,
+      type: 'object',
+      properties,
+      required,
+    };
+    reply(schema);
+  };
+
+
+  /**
    * Get HAPI API handler for GET single record
    * @return Object
    */
@@ -384,6 +410,24 @@ function HAPIRestAPI(config) {
     };
   };
 
+
+  /**
+   * Get HAPI API handler for schema
+   * @return Object
+   */
+  this.schemaDefinitionRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'GET',
+      path: `${endpoint}/schema`,
+      handler: this.schemaDefinition,
+      config: {
+        description: `Get API schema definition for ${table}`,
+      },
+    };
+  };
+
+
   /**
    * Get HAPI route config for API
    * @return {Array} - HAPI route config
@@ -396,6 +440,7 @@ function HAPIRestAPI(config) {
     this.replaceOneRoute(),
     this.deleteOneRoute(),
     this.updateManyRoute(),
+    this.schemaDefinitionRoute(),
   ];
 }
 
