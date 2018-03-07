@@ -8,6 +8,9 @@ const uuidV4 = require('uuid/v4');
 const { ConfigError, NotFoundError } = require('./errors');
 const Request = require('./request.js');
 const Repository = require('./repository.js');
+const { mapValues } = require('lodash');
+// @source {@link https://stackoverflow.com/questions/7905929/how-to-test-valid-uuid-guid}
+const guidRegex = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
 
 /**
  * @param {Object} config - configuration options
@@ -270,6 +273,67 @@ function HAPIRestAPI(config) {
 
 
   /**
+   * Get schema definition
+   * @param {Object} hapiRequest - the HAPI request instance
+   * @return {Object} reply - the HAPI reply interface
+   */
+  this.schemaDefinition = async (hapiRequest, reply) => {
+    const {
+      table, primaryKey, primaryKeyAuto, primaryKeyGuid,
+    } = this.config;
+
+    const required = [];
+    const properties = mapValues(this.config.validation, (value, key) => {
+      // Required fields
+      if (value._flags.presence === 'required') {
+        required.push(key);
+      }
+      const field = {
+        type: value._type,
+      };
+
+      // Joi Tests
+      value._tests.forEach((test) => {
+        if (test.name === 'min') {
+          field.minLength = test.arg;
+        }
+        if (test.name === 'max') {
+          field.maxLength = test.arg;
+        }
+        if (test.name === 'email') {
+          field.format = 'email';
+        }
+        if (test.name === 'guid') {
+          field.pattern = guidRegex;
+        }
+      });
+
+      return field;
+    });
+
+
+    const jsonSchema = {
+      title: table,
+      type: 'object',
+      properties,
+      required,
+    };
+
+    reply({
+      error: null,
+      data: {
+        jsonSchema,
+        config: {
+          primaryKey,
+          primaryKeyAuto,
+          primaryKeyGuid,
+        },
+      },
+    });
+  };
+
+
+  /**
    * Get HAPI API handler for GET single record
    * @return Object
    */
@@ -384,6 +448,24 @@ function HAPIRestAPI(config) {
     };
   };
 
+
+  /**
+   * Get HAPI API handler for schema
+   * @return Object
+   */
+  this.schemaDefinitionRoute = () => {
+    const { endpoint, table } = this.config;
+    return {
+      method: 'GET',
+      path: `${endpoint}/schema`,
+      handler: this.schemaDefinition,
+      config: {
+        description: `Get API schema definition for ${table}`,
+      },
+    };
+  };
+
+
   /**
    * Get HAPI route config for API
    * @return {Array} - HAPI route config
@@ -396,6 +478,7 @@ function HAPIRestAPI(config) {
     this.replaceOneRoute(),
     this.deleteOneRoute(),
     this.updateManyRoute(),
+    this.schemaDefinitionRoute(),
   ];
 }
 

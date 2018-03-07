@@ -52,6 +52,24 @@ When finding many records, pagination data is returned:
 }
 ```
 
+When querying for the schema, JSON schema and configuration data is returned:
+
+```
+{
+  "error" : null,
+  "data" : {
+    "jsonSchema" : {
+      ...
+    },
+    "config" : {
+      "primaryKey" : "field",
+      "primaryKeyAuto" : false,
+      "primaryKeyGuid" : true
+    }
+  }
+}
+```
+
 ## Usage
 
 ```
@@ -79,6 +97,18 @@ const SessionsApi = RestApi({
 // Import routes to HAPI
 server.route([
   ...SessionsApi.getRoutes()
+]);
+
+// Or, import individual routes as required
+server.route([
+  SessionsApi.findManyRoute(),
+  SessionsApi.findOneRoute(),
+  SessionsApi.createRoute(),
+  SessionsApi.updateOneRoute(),
+  SessionsApi.replaceOneRoute(),
+  SessionsApi.deleteOneRoute(),
+  SessionsApi.updateManyRoute(),
+  SessionsApi.schemaDefinitionRoute(),
 ]);
 ```
 
@@ -210,6 +240,14 @@ Body:
 }
 ```
 
+You can also use mongo-style operators such as $gt, $gte, $lt, $lte, $like, $ilike, for example:
+
+```
+GET /endpoint?filter={"field": {$ilike : "%value"}}&sort={"field":+1,"field2":-1}
+```
+
+Internally, the [mongo-sql](https://www.npmjs.com/package/mongo-sql) library is used to build filter queries.
+
 ### Pagination
 
 Request:
@@ -321,6 +359,95 @@ Body:
 }
 ```
 
+### Get Schema
+
+An endpoint is available that gets a basic JSON schema representation of the
+validation rules provided to Joi in the configuration object.
+
+Request:
+```
+DELETE /endpoint/schema
+```
+
+Success Response:
+```
+200 OK
+Body:
+{
+  "error" : null,
+  "data" : {
+    "jsonSchema" : {
+      ...
+    },
+    "config" : {
+      ...
+    }
+  }
+}
+```
+
+Currently supported options in the schema are:
+
+Joi validation config:
+```
+{
+  id : Joi.string().guid(),
+  field_1 : Joi.string(),
+  field_2 : Joi.number(),
+  field_3 : Joi.string().required(),
+  field_4 : Joi.string().email(),
+  field_5 : Joi.string().min(4).max(16)
+}
+```
+
+Success Response:
+```
+200 OK
+Body:
+{
+  "error" : null,
+  "data" : {
+    "jsonSchema" : {
+      "type" : "object",
+      "title" : "sessions",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "pattern" : "/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i"
+        },
+        "field_1" : {
+          "type" : "string"
+        },
+        "field_2" : {
+          "type" : "number"
+        },
+        "field_3" : {
+          "type" : "string"
+        },
+        "field_4" : {
+          "type" : "string",
+          "format" : "email"
+        },
+        "field_5" : {
+          "type" : "string",
+          "minLength" : 4,
+          "maxLength" : 16
+        }
+      },
+      "required" : ["field_3"]
+    },
+    "config" : {
+      "primaryKey" : "id",
+      "primaryKeyAuto" : false,
+      "primaryKeyGuid" : true
+    }
+  }
+}
+```
+
+
+
+
 ## Validation
 
 Data is validated with Joi validation, and on failure, the 'error' key in the response is populated with the Joi error.
@@ -374,20 +501,23 @@ const client = new APIClient(rp, {
 ### Client methods:
 
 ```
-const data = {field : 'value', field2 : 'value2'}
+const data = {field : 'value', field2 : 'value2'};
 const filter = {field : 'value'};
 const sort = {field2 : +1, field3 : -1};
 const pagination = {page : 1, perPage : 5};
 
 // Single record
-var {data, error} = await client.create(data)   
-var {data, error} = await client.findOne('guid')
-var {data, rowCount, error} = await client.updateOne('guid', data)  
+var {data, error} = await client.create(data);
+var {data, error} = await client.findOne('guid');
+var {data, rowCount, error} = await client.updateOne('guid', data);  
 await client.delete('guid');
 
 // Batch
-var {data, error} = await client.findMany(filter, sort, pagination)  
-var {data, rowCount, error} = await client.updateMany(filter, data)
+var {data, error} = await client.findMany(filter, sort, pagination);
+var {data, rowCount, error} = await client.updateMany(filter, data);
+
+// Schema
+var {data, error} = await client.schema();
 ```
 
 ### Error Handling

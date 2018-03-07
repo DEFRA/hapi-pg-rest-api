@@ -3,11 +3,11 @@
   "version": "2.0.1",
   "description": "RESTful API builder for Postgres DB table within a HAPI v16 application",
   "main": "index.js",
-  "bugs" : {
-    "url" : "https://github.com/DEFRA/hapi-pg-rest-api/issues"
+  "bugs": {
+    "url": "https://github.com/DEFRA/hapi-pg-rest-api/issues"
   },
-  "homepage" : {
-    "url" : "https://github.com/DEFRA/hapi-pg-rest-api#readme"
+  "homepage": {
+    "url": "https://github.com/DEFRA/hapi-pg-rest-api#readme"
   },
   "repository": {
     "type": "git",
