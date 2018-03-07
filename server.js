@@ -21,6 +21,7 @@ server.connection({
   port: 8000,
 });
 
+
 server.route([
   ...SessionsApi(pool).getRoutes(),
   ...SessionsApiContext(pool).getRoutes(),
