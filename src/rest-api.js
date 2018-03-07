@@ -214,8 +214,9 @@ class HAPIRestAPI extends RestHAPIInterface {
 
       const { rowCount, rows } = await this.repo.update(command.filter, data);
 
+      const returnData = rowCount === 1 ? rows[0] : null;
+
       if (isMany || (rowCount === 1)) {
-        const returnData = isMany ? null : rows[0];
         return reply({ data: returnData, error: null, rowCount });
       }
 
