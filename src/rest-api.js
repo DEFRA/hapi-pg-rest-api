@@ -78,8 +78,8 @@ function HAPIRestAPI(config) {
     }
 
     // DB error
-    const { code } = error;
-    const statusCode = code === 23505 ? 400 : 500;
+    const code = parseInt(error.code, 10);
+    const statusCode = [23505, 23502].includes(code) ? 400 : 500;
     return reply({ error: { name: 'DBError', code }, data: null }).code(statusCode);
   };
 
@@ -277,6 +277,7 @@ function HAPIRestAPI(config) {
    * @param {Object} hapiRequest - the HAPI request instance
    * @return {Object} reply - the HAPI reply interface
    */
+  /* eslint no-underscore-dangle : "warning" */
   this.schemaDefinition = async (hapiRequest, reply) => {
     const {
       table, primaryKey, primaryKeyAuto, primaryKeyGuid,

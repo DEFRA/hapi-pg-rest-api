@@ -54,6 +54,7 @@ lab.experiment('Test POST entity creation', () => {
       payload: {
         session_id: '85353c63-4a5d-4987-b834-23b105b16152',
         session_data: JSON.stringify({ username: 'bob' }),
+        ip: '10.0.2.2',
       },
     };
 

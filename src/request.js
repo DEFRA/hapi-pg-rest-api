@@ -68,7 +68,11 @@ class Request {
       return filterError;
     }
     // Validate data
-    const dataSchema = omit(this.config.validation, [this.config.primaryKey]);
+    const {
+      validation, primaryKeyAuto, primaryKey, primaryKeyGuid,
+    } = this.config;
+    const permitPrimaryKey = (!primaryKeyAuto && !primaryKeyGuid);
+    const dataSchema = permitPrimaryKey ? validation : omit(validation, [primaryKey]);
     const { error: dataError } = Joi.validate(result.data, dataSchema);
     if (dataError) {
       return dataError;

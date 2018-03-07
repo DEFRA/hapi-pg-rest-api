@@ -10,6 +10,7 @@ const Blipp = require('blipp');
 const SessionsApi = require('./sessions-api.js');
 const SessionsApiContext = require('./sessions-api-context.js');
 const AutoPKApi = require('./auto-pk-api.js');
+const NumericPKApi = require('./numeric-pk-api.js');
 const pool = require('./db');
 
 // Create a server with a host and port
@@ -24,6 +25,7 @@ server.route([
   ...SessionsApi(pool).getRoutes(),
   ...SessionsApiContext(pool).getRoutes(),
   ...AutoPKApi(pool).getRoutes(),
+  ...NumericPKApi(pool).getRoutes(),
 ]);
 
 server.register({
