@@ -11,6 +11,7 @@ const Repository = require('./repository.js');
 const { mapValues } = require('lodash');
 // @source {@link https://stackoverflow.com/questions/7905929/how-to-test-valid-uuid-guid}
 const guidRegex = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
+const RestHAPIInterface = require('./rest-hapi-interface');
 
 /**
  * @param {Object} config - configuration options
@@ -21,32 +22,37 @@ const guidRegex = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-
  * @param {Function} config.onCreateTimestamp - field to update with NOW() on create
  * @param {Function} config.connection - DB connection, e.g. created with Pool
  */
-function HAPIRestAPI(config) {
-  // Require validation
-  if (!config.validation) {
-    throw new ConfigError('Validation missing from API config');
+class HAPIRestAPI extends RestHAPIInterface {
+  constructor(config) {
+    // Require validation
+    if (!config.validation) {
+      throw new ConfigError('Validation missing from API config');
+    }
+
+    // Create config object with defaults
+    const configWithDefaults = Object.assign({
+      // Modify data pre-insert
+      preInsert: data => data,
+      preUpdate: data => data,
+      preQuery: result => result,
+      postSelect: data => data,
+      upsert: null,
+      primaryKeyAuto: false,
+      primaryKeyGuid: true,
+      pagination: {
+        page: 1,
+        perPage: 100,
+      },
+    }, config);
+
+    super(configWithDefaults);
+    this.config = configWithDefaults;
+
+    this.repo = new Repository(this.config);
+
+    // Create request processor instance
+    this.request = new Request(this.config);
   }
-
-  // Create config object with defaults
-  this.config = Object.assign({
-    // Modify data pre-insert
-    preInsert: data => data,
-    preUpdate: data => data,
-    preQuery: result => result,
-    postSelect: data => data,
-    upsert: null,
-    primaryKeyAuto: false,
-    primaryKeyGuid: true,
-    pagination: {
-      page: 1,
-      perPage: 100,
-    },
-  }, config);
-
-  this.repo = new Repository(this.config);
-
-  // Create request processor instance
-  this.request = new Request(this.config);
 
   /**
    * Do DB query
@@ -54,15 +60,16 @@ function HAPIRestAPI(config) {
    * @param {Array} queryParams - bound query params
    * @return {Promise} resolves with PostGres result
    */
-  this.dbQuery = (query, queryParams) => this.config.connection.query(query, queryParams);
-
+  dbQuery(query, queryParams) {
+    return this.config.connection.query(query, queryParams);
+  }
 
   /**
    * Get an error handler function
    * @param {Object} error - PostGres DB response
    * @param {Object} reply - HAPI HTTP reply interface
    */
-  this.errorReply = (error, reply) => {
+  errorReply(error, reply) {
     console.error(error);
     // Validation error is a bad request - 400
     if (error.name === 'ValidationError') {
@@ -81,7 +88,7 @@ function HAPIRestAPI(config) {
     const code = parseInt(error.code, 10);
     const statusCode = [23505, 23502].includes(code) ? 400 : 500;
     return reply({ error: { name: 'DBError', code }, data: null }).code(statusCode);
-  };
+  }
 
 
   /**
@@ -90,7 +97,7 @@ function HAPIRestAPI(config) {
    * @param {Object} request - internal request object
    * @return {Object} pagination info
    */
-  this.getPagination = async (request) => {
+  async getPagination(request) {
     const result = await this.repo.findRowCount(request.filter);
     const totalRows = parseInt(result.rows[0].totalrowcount, 10);
 
@@ -99,15 +106,16 @@ function HAPIRestAPI(config) {
       totalRows,
       pageCount: Math.ceil(totalRows / request.pagination.perPage),
     };
-  };
+  }
 
 
   /**
    * Find one/many results
    */
-  this.find = async (hapiRequest, reply, isMany = false) => {
+  async find(hapiRequest, reply, isMany = false) {
     try {
       const request = await this.request.processRequest(hapiRequest);
+
 
       // Get data
       const result = await this.repo.find(
@@ -132,10 +140,9 @@ function HAPIRestAPI(config) {
       }
     }
     catch (error) {
-      // console.log(error);
       return this.errorReply(error, reply);
     }
-  };
+  }
 
 
   /**
@@ -146,7 +153,9 @@ function HAPIRestAPI(config) {
    * @param {Object} reply - HAPI HTTP reply interface
    * @return {Promise} resolves with HAPI reply
    */
-  this.findOne = async (request, reply) => this.find(request, reply, false);
+  findOne(request, reply) {
+    return this.find(request, reply, false);
+  }
 
 
   /**
@@ -158,13 +167,15 @@ function HAPIRestAPI(config) {
    * @param {Object} reply - HAPI HTTP reply interface
    * @return {Promise} resolves with HAPI reply
    */
-  this.findMany = async (request, reply) => this.find(request, reply, true);
+  findMany(request, reply) {
+    return this.find(request, reply, true);
+  }
 
   /**
    * Create a new record (POST)
    * @param {Object} request.payload - the data to insert
    */
-  this.create = async (hapiRequest, reply) => {
+  async create(hapiRequest, reply) {
     const { primaryKey } = this.config;
 
     try {
@@ -190,10 +201,10 @@ function HAPIRestAPI(config) {
     catch (error) {
       return this.errorReply(error, reply);
     }
-  };
+  }
 
 
-  this.update = async (hapiRequest, reply, isMany) => {
+  async update(hapiRequest, reply, isMany) {
     try {
       const command = await this.request.processRequest(hapiRequest);
 
@@ -217,7 +228,7 @@ function HAPIRestAPI(config) {
     catch (error) {
       return this.errorReply(error, reply);
     }
-  };
+  }
 
 
   /**
@@ -225,7 +236,9 @@ function HAPIRestAPI(config) {
    * @param {String} request.params.id
    * @param {Object} request.payload - field/value pairs to update
    */
-  this.updateOne = async (request, reply) => this.update(request, reply, false);
+  async updateOne(request, reply) {
+    return this.update(request, reply, false);
+  }
 
 
   /**
@@ -233,14 +246,16 @@ function HAPIRestAPI(config) {
    * @param {String} request.query.filter - JSON encoded filter params
    * @param {Object} request.payload - field/value pairs to update
    */
-  this.updateMany = async (request, reply) => this.update(request, reply, true);
+  async updateMany(request, reply) {
+    return this.update(request, reply, true);
+  }
 
 
   /**
    * Replace a whole record (PUT)
    * @TODO
    */
-  this.replace = (request, reply) => {
+  replace(request, reply) {
     reply({
       data: null,
       error: {
@@ -248,14 +263,14 @@ function HAPIRestAPI(config) {
         message: 'PUT for this API is not yet implemented',
       },
     }).code(501);
-  };
+  }
 
 
   /**
    * Delete a record
    * @param {Mixed} hapiRequest.params.id - the ID of the record to delete
    */
-  this.delete = async (hapiRequest, reply) => {
+  async delete(hapiRequest, reply) {
     try {
       const command = await this.request.processRequest(hapiRequest);
 
@@ -269,7 +284,7 @@ function HAPIRestAPI(config) {
     catch (error) {
       return this.errorReply(error, reply);
     }
-  };
+  }
 
 
   /**
@@ -278,7 +293,7 @@ function HAPIRestAPI(config) {
    * @return {Object} reply - the HAPI reply interface
    */
   /* eslint no-underscore-dangle : "warning" */
-  this.schemaDefinition = async (hapiRequest, reply) => {
+  async schemaDefinition(hapiRequest, reply) {
     const {
       table, primaryKey, primaryKeyAuto, primaryKeyGuid,
     } = this.config;
@@ -331,156 +346,7 @@ function HAPIRestAPI(config) {
         },
       },
     });
-  };
-
-
-  /**
-   * Get HAPI API handler for GET single record
-   * @return Object
-   */
-  this.findManyRoute = () => {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'GET',
-      path: endpoint,
-      handler: this.findMany,
-      config: {
-        description: `Get many ${table} records`,
-      },
-    };
-  };
-
-  /**
-   * Get HAPI API handler for GET single record
-   * @return Object
-   */
-  this.findOneRoute = () => {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'GET',
-      path: `${endpoint}/{id}`,
-      handler: this.findOne,
-      config: {
-        description: `Get single ${table} record`,
-      },
-    };
-  };
-
-  /**
-   * Get HAPI API handler for POST new record
-   * @return Object
-   */
-  this.createRoute = () => {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'POST',
-      path: endpoint,
-      handler: this.create,
-      config: {
-        description: `Create new ${table} record`,
-      },
-    };
-  };
-
-  /**
-   * Get HAPI API handler for PATCH single record
-   * @return Object
-   */
-  this.updateOneRoute = () => {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'PATCH',
-      path: `${endpoint}/{id}`,
-      handler: this.updateOne,
-      config: {
-        description: `Patch single ${table} record`,
-      },
-    };
-  };
-
-
-  /**
-   * Get HAPI API handler for PUT single record
-   * @return Object
-   */
-  this.replaceOneRoute = () => {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'PUT',
-      path: `${endpoint}/{id}`,
-      handler: this.replace,
-      config: {
-        description: `Replace single ${table} record`,
-      },
-    };
-  };
-
-
-  /**
-   * Get HAPI API handler for DELETE single record
-   * @return Object
-   */
-  this.deleteOneRoute = () => {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'DELETE',
-      path: `${endpoint}/{id}`,
-      handler: this.delete,
-      config: {
-        description: `Delete single ${table}record`,
-      },
-    };
-  };
-
-
-  /**
-   * Get HAPI API handler for PATCH many records
-   * @return Object
-   */
-  this.updateManyRoute = () => {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'PATCH',
-      path: `${endpoint}`,
-      handler: this.updateMany,
-      config: {
-        description: `Patch many ${table} records`,
-      },
-    };
-  };
-
-
-  /**
-   * Get HAPI API handler for schema
-   * @return Object
-   */
-  this.schemaDefinitionRoute = () => {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'GET',
-      path: `${endpoint}/schema`,
-      handler: this.schemaDefinition,
-      config: {
-        description: `Get API schema definition for ${table}`,
-      },
-    };
-  };
-
-
-  /**
-   * Get HAPI route config for API
-   * @return {Array} - HAPI route config
-   */
-  this.getRoutes = () => [
-    this.findManyRoute(),
-    this.findOneRoute(),
-    this.createRoute(),
-    this.updateOneRoute(),
-    this.replaceOneRoute(),
-    this.deleteOneRoute(),
-    this.updateManyRoute(),
-    this.schemaDefinitionRoute(),
-  ];
+  }
 }
 
 
