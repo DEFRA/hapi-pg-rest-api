@@ -116,7 +116,6 @@ class HAPIRestAPI extends RestHAPIInterface {
     try {
       const request = await this.request.processRequest(hapiRequest);
 
-
       // Get data
       const result = await this.repo.find(
         request.filter, request.sort,
@@ -125,10 +124,7 @@ class HAPIRestAPI extends RestHAPIInterface {
 
       if (isMany) {
         const replyData = { data: this.config.postSelect(result.rows), error: null };
-
-        if (request.pagination) {
-          replyData.pagination = await this.getPagination(request);
-        }
+        replyData.pagination = await this.getPagination(request);
 
         return reply(replyData);
       }
