@@ -40,15 +40,7 @@ class RestHAPIInterface {
    * @return Object
    */
   findManyRoute() {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'GET',
-      path: endpoint,
-      handler: this.findMany.bind(this),
-      config: {
-        description: `Get many ${table} records`,
-      },
-    };
+    return this._getRoute('GET', this.findMany.bind(this), true);
   }
 
   /**
@@ -56,15 +48,7 @@ class RestHAPIInterface {
    * @return Object
    */
   findOneRoute() {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'GET',
-      path: `${endpoint}/{id}`,
-      handler: this.findOne.bind(this),
-      config: {
-        description: `Get single ${table} record`,
-      },
-    };
+    return this._getRoute('GET', this.findOne.bind(this));
   }
 
   /**
@@ -72,15 +56,7 @@ class RestHAPIInterface {
    * @return Object
    */
   createRoute() {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'POST',
-      path: endpoint,
-      handler: this.create.bind(this),
-      config: {
-        description: `Create new ${table} record`,
-      },
-    };
+    return this._getRoute('POST', this.create.bind(this));
   }
 
   /**
@@ -88,15 +64,7 @@ class RestHAPIInterface {
    * @return Object
    */
   updateOneRoute() {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'PATCH',
-      path: `${endpoint}/{id}`,
-      handler: this.updateOne.bind(this),
-      config: {
-        description: `Patch single ${table} record`,
-      },
-    };
+    return this._getRoute('PATCH', this.updateOne.bind(this));
   }
 
 
@@ -105,15 +73,7 @@ class RestHAPIInterface {
    * @return Object
    */
   replaceOneRoute() {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'PUT',
-      path: `${endpoint}/{id}`,
-      handler: this.replace.bind(this),
-      config: {
-        description: `Replace single ${table} record`,
-      },
-    };
+    return this._getRoute('PUT', this.replace.bind(this));
   }
 
 
@@ -122,30 +82,28 @@ class RestHAPIInterface {
    * @return Object
    */
   deleteOneRoute() {
-    const { endpoint, table } = this.config;
-    return {
-      method: 'DELETE',
-      path: `${endpoint}/{id}`,
-      handler: this.delete.bind(this),
-      config: {
-        description: `Delete single ${table}record`,
-      },
-    };
+    return this._getRoute('DELETE', this.delete.bind(this));
   }
-
 
   /**
    * Get HAPI API handler for PATCH many records
    * @return Object
    */
   updateManyRoute() {
+    return this._getRoute('PATCH', this.updateMany.bind(this), true);
+  }
+
+
+  _getRoute(method, handler, isMany) {
     const { endpoint, table } = this.config;
+    const description = `${method} ${isMany ? 'many' : 'single'} ${table} ${isMany ? 'records' : 'record'}`;
+    const path = (isMany || method === 'POST') ? endpoint : `${endpoint}/{id}`;
     return {
-      method: 'PATCH',
-      path: `${endpoint}`,
-      handler: this.updateMany.bind(this),
+      method,
+      path,
+      handler,
       config: {
-        description: `Patch many ${table} records`,
+        description,
       },
     };
   }
