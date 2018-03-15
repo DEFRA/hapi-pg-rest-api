@@ -1,7 +1,7 @@
 {
   "name": "hapi-pg-rest-api",
-  "version": "2.0.7",
-  "description": "Creates simple RESTful API routes in a HAPI application linked to a Postgres DB table ",
+  "version": "3.1.0",
+  "description": "RESTful API builder for Postgres DB table within a HAPI v17 application",
   "main": "index.js",
   "bugs": {
     "url": "https://github.com/DEFRA/hapi-pg-rest-api/issues"
@@ -15,7 +15,8 @@
   },
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
-    "test": "node node_modules/lab/bin/lab -t 90 -m 0 --coverage-path ./src/"
+    "lint": "./node_modules/.bin/eslint ./src/**/*.js --fix",
+    "test": "./node_modules/lab/bin/lab -t 90 -m 0 --coverage-path ./src/ --ignore version -r lcov -o lcov.info -r console -o stdout"
   },
   "engines": {
     "node": ">=8.0"
@@ -23,7 +24,7 @@
   "author": "Department for Environment, Food & Rural Affairs",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "joi": "^13.1.0",
+    "joi": "^13.1.2",
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
     "mongo-sql": "^5.0.0",
@@ -31,21 +32,24 @@
     "uuid": "^3.1.0"
   },
   "devDependencies": {
-    "blipp": "^2.3.0",
+    "blipp": "^3.0.0",
     "bluebird": "^3.5.1",
     "code": "^5.1.2",
     "codecov": "^3.0.0",
     "db-migrate": "^0.10.2",
     "db-migrate-pg": "^0.2.5",
     "dotenv": "^4.0.0",
-    "eslint": "^4.9.0",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.7.0",
-    "hapi": "^16.6.2",
-    "istanbul": "^0.4.5",
+    "hapi": "^17.2.2",
     "lab": "^15.2.0",
     "pg": "^7.4.1",
     "request-promise-native": "^1.0.5",
-    "sinon": "^4.1.4"
+    "sinon": "^4.1.4",
+    "eslint": "^4.17.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^6.0.0",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "standard": "^10.0.3"
   }
 }

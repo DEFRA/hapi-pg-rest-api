@@ -9,17 +9,15 @@ const objectWalk = require('object-walk');
 const omit = require('lodash/omit');
 const { ValidationError } = require('./errors.js');
 
-
 class Request {
   /**
    * Constructor
    * @constructor
    * @param {Object} config - configuration data
    */
-  constructor(config) {
+  constructor (config) {
     this.config = config;
   }
-
 
   /**
    * Given that a filter query may now contain method params, e.g.
@@ -28,7 +26,7 @@ class Request {
    * @param {Object} filter, eg {field : 'value'}
    * @return {Object} filter with mongo-style queries converted to an array of values
    */
-  static getFilterValues(filter) {
+  static getFilterValues (filter) {
     return mapValues(filter, (value) => {
       if (typeof (value) !== 'object' || isArray(value) || value === null) {
         return value;
@@ -49,7 +47,6 @@ class Request {
     });
   }
 
-
   /**
    * Validates request result
    * the result is in the form {filter, data, sort}
@@ -58,7 +55,7 @@ class Request {
    * @param {Object} result.sort - sort data by these fields when selecting
    * @param {Object} result.data - create/update data
    */
-  validate(result) {
+  validate (result) {
     const filterValues = Request.getFilterValues(result.filter);
 
     // Validate filter
@@ -75,7 +72,7 @@ class Request {
 
     // Validate data
     const {
-      validation, primaryKeyAuto, primaryKey, primaryKeyGuid,
+      validation, primaryKeyAuto, primaryKey, primaryKeyGuid
     } = this.config;
     const permitPrimaryKey = (!primaryKeyAuto && !primaryKeyGuid);
     const dataSchema = permitPrimaryKey ? validation : omit(validation, [primaryKey]);
@@ -96,14 +93,13 @@ class Request {
     // Validate columns
     if (result.columns) {
       const cSchema = {
-        columns: Joi.array().items(Joi.string().valid(Object.keys(this.config.validation))),
+        columns: Joi.array().items(Joi.string().valid(Object.keys(this.config.validation)))
       };
       const { error: columnError } = Joi.validate({ columns: result.columns }, cSchema);
       if (columnError) {
         return new ValidationError('Invalid column specification');
       }
     }
-
 
     return null;
   }
@@ -113,7 +109,7 @@ class Request {
    * @param {Object} - HAPI HTTP request interface
    * @return {Object} - processed data with {filter, sort, data}
    */
-  processRequest(request) {
+  processRequest (request) {
     const { primaryKey, pagination } = this.config;
 
     const result = {
@@ -126,7 +122,7 @@ class Request {
       // Paginate data
       pagination,
       // Columns (default is select * )
-      columns: null,
+      columns: null
     };
 
     if ('id' in request.params) {
@@ -136,8 +132,7 @@ class Request {
       try {
         const filter = JSON.parse(request.query.filter);
         result.filter = Object.assign({}, filter, result.filter);
-      }
-      catch (e) {
+      } catch (e) {
         throw new ValidationError('Filter must be valid JSON');
       }
     }
@@ -145,24 +140,21 @@ class Request {
       try {
         const sort = JSON.parse(request.query.sort);
         result.sort = Object.assign({}, sort, result.sort);
-      }
-      catch (e) {
+      } catch (e) {
         throw new ValidationError('Sort must be valid JSON');
       }
     }
     if ('pagination' in request.query) {
       try {
         result.pagination = JSON.parse(request.query.pagination);
-      }
-      catch (e) {
+      } catch (e) {
         throw new ValidationError('Pagination must be valid JSON');
       }
     }
     if ('columns' in request.query) {
       try {
         result.columns = request.query.columns.split(',');
-      }
-      catch (e) {
+      } catch (e) {
         throw new ValidationError('Columns must be valid JSON');
       }
     }

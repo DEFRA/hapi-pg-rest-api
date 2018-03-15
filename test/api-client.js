@@ -9,7 +9,7 @@ const rp = require('request-promise-native').defaults({
 const lab = Lab.script();
 const server = require('../server.js');
 
-server.start();
+// server.start();
 const APIClient = require('../src/api-client.js');
 
 const client = new APIClient(rp, {

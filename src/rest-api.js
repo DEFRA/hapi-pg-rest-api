@@ -23,7 +23,7 @@ const RestHAPIInterface = require('./rest-hapi-interface');
  * @param {Function} config.connection - DB connection, e.g. created with Pool
  */
 class HAPIRestAPI extends RestHAPIInterface {
-  constructor(config) {
+  constructor (config) {
     // Require validation
     if (!config.validation) {
       throw new ConfigError('Validation missing from API config');
@@ -41,8 +41,8 @@ class HAPIRestAPI extends RestHAPIInterface {
       primaryKeyGuid: true,
       pagination: {
         page: 1,
-        perPage: 100,
-      },
+        perPage: 100
+      }
     }, config);
 
     super(configWithDefaults);
@@ -60,36 +60,35 @@ class HAPIRestAPI extends RestHAPIInterface {
    * @param {Array} queryParams - bound query params
    * @return {Promise} resolves with PostGres result
    */
-  dbQuery(query, queryParams) {
+  dbQuery (query, queryParams) {
     return this.config.connection.query(query, queryParams);
   }
 
   /**
    * Get an error handler function
    * @param {Object} error - PostGres DB response
-   * @param {Object} reply - HAPI HTTP reply interface
+   * @param {Object} h - HAPI HTTP reply interface
    */
-  errorReply(error, reply) {
+  static errorReply (error, h) {
     console.error(error);
     // Validation error is a bad request - 400
     if (error.name === 'ValidationError') {
-      return reply({ error, data: null }).code(400);
+      return h.response({ error, data: null }).code(400);
     }
     // Config error - server issue
     if (error.name === 'ConfigError') {
-      return reply({ error, data: null }).code(500);
+      return h.response({ error, data: null }).code(500);
     }
     // Config error - server issue
     if (error.name === 'NotFoundError') {
-      return reply({ error, data: null }).code(404);
+      return h.response({ error, data: null }).code(404);
     }
 
     // DB error
     const code = parseInt(error.code, 10);
     const statusCode = [23505, 23502].includes(code) ? 400 : 500;
-    return reply({ error: { name: 'DBError', code }, data: null }).code(statusCode);
+    return h.response({ error: { name: 'DBError', code }, data: null }).code(statusCode);
   }
-
 
   /**
    * Get pagination info for paginated request
@@ -97,49 +96,44 @@ class HAPIRestAPI extends RestHAPIInterface {
    * @param {Object} request - internal request object
    * @return {Object} pagination info
    */
-  async getPagination(request) {
+  async getPagination (request) {
     const result = await this.repo.findRowCount(request.filter);
     const totalRows = parseInt(result.rows[0].totalrowcount, 10);
 
     return {
       ...request.pagination,
       totalRows,
-      pageCount: Math.ceil(totalRows / request.pagination.perPage),
+      pageCount: Math.ceil(totalRows / request.pagination.perPage)
     };
   }
-
 
   /**
    * Find one/many results
    */
-  async find(hapiRequest, reply, isMany = false) {
+  async find (hapiRequest, h, isMany = false) {
     try {
       const request = await this.request.processRequest(hapiRequest);
 
       // Get data
       const result = await this.repo.find(
         request.filter, request.sort,
-        request.pagination, request.columns,
+        request.pagination, request.columns
       );
 
       if (isMany) {
         const replyData = { data: this.config.postSelect(result.rows), error: null };
         replyData.pagination = await this.getPagination(request);
 
-        return reply(replyData);
-      }
-      else if (result.rows.length !== 1) {
+        return h.response(replyData);
+      } else if (result.rows.length !== 1) {
         throw new NotFoundError('Query must return exactly 1 row');
+      } else {
+        return h.response({ data: this.config.postSelect(result.rows)[0], error: null });
       }
-      else {
-        return reply({ data: this.config.postSelect(result.rows)[0], error: null });
-      }
-    }
-    catch (error) {
-      return this.errorReply(error, reply);
+    } catch (error) {
+      return this.errorReply(error, h);
     }
   }
-
 
   /**
    * Find single record
@@ -149,10 +143,9 @@ class HAPIRestAPI extends RestHAPIInterface {
    * @param {Object} reply - HAPI HTTP reply interface
    * @return {Promise} resolves with HAPI reply
    */
-  findOne(request, reply) {
-    return this.find(request, reply, false);
+  findOne (request, h) {
+    return this.find(request, h, false);
   }
-
 
   /**
    * Find many records
@@ -163,15 +156,15 @@ class HAPIRestAPI extends RestHAPIInterface {
    * @param {Object} reply - HAPI HTTP reply interface
    * @return {Promise} resolves with HAPI reply
    */
-  findMany(request, reply) {
-    return this.find(request, reply, true);
+  findMany (request, h) {
+    return this.find(request, h, true);
   }
 
   /**
    * Create a new record (POST)
    * @param {Object} request.payload - the data to insert
    */
-  async create(hapiRequest, reply) {
+  async create (hapiRequest, h) {
     const { primaryKey } = this.config;
 
     try {
@@ -192,15 +185,13 @@ class HAPIRestAPI extends RestHAPIInterface {
 
       const result = await this.repo.create(data, command.columns);
 
-      return reply({ data: result.rows[0], error: null }).code(201);
-    }
-    catch (error) {
-      return this.errorReply(error, reply);
+      return h.response({ data: result.rows[0], error: null }).code(201);
+    } catch (error) {
+      return this.errorReply(error, h);
     }
   }
 
-
-  async update(hapiRequest, reply, isMany) {
+  async update (hapiRequest, h, isMany) {
     try {
       const command = await this.request.processRequest(hapiRequest);
 
@@ -217,82 +208,75 @@ class HAPIRestAPI extends RestHAPIInterface {
       const returnData = rowCount === 1 ? rows[0] : null;
 
       if (isMany || (rowCount === 1)) {
-        return reply({ data: returnData, error: null, rowCount });
+        return h.response({ data: returnData, error: null, rowCount });
       }
 
       throw new NotFoundError('Query must update exactly 1 row');
-    }
-    catch (error) {
-      return this.errorReply(error, reply);
+    } catch (error) {
+      return this.errorReply(error, h);
     }
   }
-
 
   /**
    * Update a single record (PATCH)
    * @param {String} request.params.id
    * @param {Object} request.payload - field/value pairs to update
    */
-  async updateOne(request, reply) {
-    return this.update(request, reply, false);
+  async updateOne (request, h) {
+    return this.update(request, h, false);
   }
-
 
   /**
    * Update many records (PATCH)
    * @param {String} request.query.filter - JSON encoded filter params
    * @param {Object} request.payload - field/value pairs to update
    */
-  async updateMany(request, reply) {
-    return this.update(request, reply, true);
+  async updateMany (request, h) {
+    return this.update(request, h, true);
   }
-
 
   /**
    * Replace a whole record (PUT)
    * @TODO
    */
-  replace(request, reply) {
-    reply({
+  static replace (request, h) {
+    return h.response({
       data: null,
       error: {
         name: 'NotImplementedError',
-        message: 'PUT for this API is not yet implemented',
-      },
+        message: 'PUT for this API is not yet implemented'
+      }
     }).code(501);
   }
-
 
   /**
    * Delete a record
    * @param {Mixed} hapiRequest.params.id - the ID of the record to delete
    */
-  async delete(hapiRequest, reply) {
+  async delete (hapiRequest, h) {
     try {
       const command = await this.request.processRequest(hapiRequest);
 
       const { rowCount } = await this.repo.delete(command.filter);
 
       if (rowCount > 0) {
-        return reply({ data: null, error: null, rowCount });
+        return h.response({ data: null, error: null, rowCount });
       }
       throw new NotFoundError('No records deleted');
-    }
-    catch (error) {
-      return this.errorReply(error, reply);
+    } catch (error) {
+      return this.errorReply(error, h);
     }
   }
-
 
   /**
    * Get schema definition
    * @param {Object} hapiRequest - the HAPI request instance
    * @return {Object} reply - the HAPI reply interface
    */
-  /* eslint no-underscore-dangle : "warning" */
-  async schemaDefinition(hapiRequest, reply) {
+  /* eslint no-underscore-dangle : ["warn", {}] */
+  async schemaDefinition (hapiRequest, h) {
     const {
-      table, primaryKey, primaryKeyAuto, primaryKeyGuid,
+      table, primaryKey, primaryKeyAuto, primaryKeyGuid
     } = this.config;
 
     const required = [];
@@ -302,7 +286,7 @@ class HAPIRestAPI extends RestHAPIInterface {
         required.push(key);
       }
       const field = {
-        type: value._type,
+        type: value._type
       };
 
       // Joi Tests
@@ -324,27 +308,25 @@ class HAPIRestAPI extends RestHAPIInterface {
       return field;
     });
 
-
     const jsonSchema = {
       title: table,
       type: 'object',
       properties,
-      required,
+      required
     };
 
-    reply({
+    return h.response({
       error: null,
       data: {
         jsonSchema,
         config: {
           primaryKey,
           primaryKeyAuto,
-          primaryKeyGuid,
-        },
-      },
+          primaryKeyGuid
+        }
+      }
     });
   }
 }
-
 
 module.exports = HAPIRestAPI;
