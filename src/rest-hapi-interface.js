@@ -32,7 +32,7 @@ class RestHAPIInterface {
    * @return Object
    */
   findManyRoute () {
-    return this.getRoute('GET', this.findMany.bind(this), true);
+    return this._getRoute('GET', this.findMany.bind(this), true);
   }
 
   /**
@@ -40,7 +40,7 @@ class RestHAPIInterface {
    * @return Object
    */
   findOneRoute () {
-    return this.getRoute('GET', this.findOne.bind(this));
+    return this._getRoute('GET', this.findOne.bind(this));
   }
 
   /**
@@ -48,7 +48,7 @@ class RestHAPIInterface {
    * @return Object
    */
   createRoute () {
-    return this.getRoute('POST', this.create.bind(this));
+    return this._getRoute('POST', this.create.bind(this));
   }
 
   /**
@@ -56,7 +56,7 @@ class RestHAPIInterface {
    * @return Object
    */
   updateOneRoute () {
-    return this.getRoute('PATCH', this.updateOne.bind(this));
+    return this._getRoute('PATCH', this.updateOne.bind(this));
   }
 
   /**
@@ -64,7 +64,7 @@ class RestHAPIInterface {
    * @return Object
    */
   replaceOneRoute () {
-    return this.getRoute('PUT', this.replace.bind(this));
+    return this._getRoute('PUT', this.replace.bind(this));
   }
 
   /**
@@ -72,7 +72,7 @@ class RestHAPIInterface {
    * @return Object
    */
   deleteOneRoute () {
-    return this.getRoute('DELETE', this.delete.bind(this));
+    return this._getRoute('DELETE', this.delete.bind(this));
   }
 
   /**
@@ -88,10 +88,10 @@ class RestHAPIInterface {
    * @return Object
    */
   updateManyRoute () {
-    return this.getRoute('PATCH', this.updateMany.bind(this), true);
+    return this._getRoute('PATCH', this.updateMany.bind(this), true);
   }
 
-  getRoute (method, handler, isMany) {
+  _getRoute (method, handler, isMany) {
     const { endpoint, table } = this.config;
     const description = `${method} ${isMany ? 'many' : 'single'} ${table} ${isMany ? 'records' : 'record'}`;
     const path = (isMany || method === 'POST') ? endpoint : `${endpoint}/{id}`;

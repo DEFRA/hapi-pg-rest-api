@@ -69,7 +69,7 @@ class HAPIRestAPI extends RestHAPIInterface {
    * @param {Object} error - PostGres DB response
    * @param {Object} h - HAPI HTTP reply interface
    */
-  static errorReply (error, h) {
+  errorReply (error, h) {
     console.error(error);
     // Validation error is a bad request - 400
     if (error.name === 'ValidationError') {
@@ -239,7 +239,7 @@ class HAPIRestAPI extends RestHAPIInterface {
    * Replace a whole record (PUT)
    * @TODO
    */
-  static replace (request, h) {
+  replace (request, h) {
     return h.response({
       data: null,
       error: {
