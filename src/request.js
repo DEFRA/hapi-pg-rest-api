@@ -62,6 +62,8 @@ class Request {
     const filterValues = Request.getFilterValues(result.filter);
 
     // Validate filter
+    // Note: we allowUnknown because if querying on JSON property, the object
+    // key will not match a known fieldname
     const fSchema = mapValues(this.config.validation, value => [value, Joi.array().items(value)]);
     const { error: filterError } = Joi.validate(filterValues, fSchema, {
       allowUnknown: true,
