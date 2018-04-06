@@ -63,10 +63,14 @@ class Request {
 
     // Validate filter
     const fSchema = mapValues(this.config.validation, value => [value, Joi.array().items(value)]);
-    const { error: filterError } = Joi.validate(filterValues, fSchema);
+    const { error: filterError } = Joi.validate(filterValues, fSchema, {
+      allowUnknown: true,
+    });
     if (filterError) {
       return filterError;
     }
+
+
     // Validate data
     const {
       validation, primaryKeyAuto, primaryKey, primaryKeyGuid,
