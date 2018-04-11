@@ -284,21 +284,42 @@ lab.experiment('Test GET entity/entities', () => {
     Code.expect(sessionIds.join(',')).to.equal(sortBy(sessionIds).join(','));
   });
 
-
-  lab.test('The API should reject invalid sort key', async () => {
+  lab.test('The API should sort on a nested JSON field', async () => {
     const request = {
       method: 'GET',
-      url: `/api/1.0/sessions?sort=${JSON.stringify({ session_id: 1, nonexistent_field: 1 })}`,
+      url: `/api/1.0/sessions?sort=${JSON.stringify({ 'session_data->>username': 1 })}`,
     };
 
     const res = await server.inject(request);
-    Code.expect(res.statusCode).to.equal(400);
+    Code.expect(res.statusCode).to.equal(200);
 
     // Check payload
     const payload = JSON.parse(res.payload);
 
-    Code.expect(payload.error.name).to.equal('ValidationError');
+    Code.expect(payload.error).to.equal(null);
+    Code.expect(payload.data).to.be.an.array();
+
+    // Verify sort order
+    const usernames = payload.data.map(item => item.session_data.username);
+    Code.expect(usernames.join(',')).to.equal(sortBy(usernames).join(','));
   });
+
+
+  // lab.test('The API should reject invalid sort key', async () => {
+  //   const request = {
+  //     method: 'GET',
+  //     url: `/api/1.0/sessions?sort=${JSON.stringify({ session_id: 1, nonexistent_field: 1 })}`,
+  //   };
+  //
+  //   const res = await server.inject(request);
+  //   Code.expect(res.statusCode).to.equal(400);
+  //
+  //   // Check payload
+  //   const payload = JSON.parse(res.payload);
+  //
+  //   Code.expect(payload.error.name).to.equal('ValidationError');
+  // });
+
 
   lab.test('The API should sort the list of records ascending', async () => {
     const request = {

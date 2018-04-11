@@ -83,16 +83,8 @@ class Request {
     if (dataError) {
       return dataError;
     }
-    // Validate sort
-    const sortError = Object.keys(result.sort).reduce((memo, sortKey) => {
-      if (memo || sortKey in this.config.validation) {
-        return memo;
-      }
-      return new ValidationError(`Sort field '${sortKey}' not defined in validation config`);
-    }, null);
-    if (sortError) {
-      return sortError;
-    }
+
+
     // Validate pagination
     if (result.pagination) {
       const pSchema = { page: Joi.number().min(1), perPage: Joi.number().default(100).min(1) };
