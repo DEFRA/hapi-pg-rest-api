@@ -271,66 +271,74 @@ function HAPIRestAPI(config) {
    */
   this.getRoutes = () => {
     const {
-      endpoint, table,
+      endpoint,
+      table,
     } = this.config;
 
-    return [
-      {
-        method: 'GET',
-        path: endpoint,
-        handler: this.findMany,
-        config: {
-          description: `Get many ${table} records`,
-        },
+    return [{
+      method: 'GET',
+      path: endpoint,
+      handler: this.findMany,
+      config: {
+        description: `Get many ${table} records`,
       },
-      {
-        method: 'GET',
-        path: `${endpoint}/{id}`,
-        handler: this.findOne,
-        config: {
-          description: `Get single ${table} record`,
-        },
+    },
+    {
+      method: 'GET',
+      path: `${endpoint}/{id}`,
+      handler: this.findOne,
+      config: {
+        description: `Get single ${table} record`,
       },
-      {
-        method: 'POST',
-        path: endpoint,
-        handler: this.create,
-        config: {
-          description: `Create new ${table} record`,
-        },
+    },
+    {
+      method: 'POST',
+      path: endpoint,
+      handler: this.create,
+      config: {
+        description: `Create new ${table} record`,
       },
-      {
-        method: 'PATCH',
-        path: `${endpoint}/{id}`,
-        handler: this.updateOne,
-        config: {
-          description: `Patch single ${table} record`,
-        },
+    },
+    {
+      method: 'PATCH',
+      path: `${endpoint}/{id}`,
+      handler: this.updateOne,
+      config: {
+        description: `Patch single ${table} record`,
       },
-      {
-        method: 'PUT',
-        path: `${endpoint}/{id}`,
-        handler: this.replace,
-        config: {
-          description: `Replace single ${table} record`,
-        },
+    },
+    {
+      method: 'PUT',
+      path: `${endpoint}/{id}`,
+      handler: this.replace,
+      config: {
+        description: `Replace single ${table} record`,
       },
-      {
-        method: 'DELETE',
-        path: `${endpoint}/{id}`,
-        handler: this.delete,
-        config: {
-          description: `Delete single ${table}record`,
-        },
+    },
+    {
+      method: 'DELETE',
+      path: `${endpoint}/{id}`,
+      handler: this.delete,
+      config: {
+        description: `Delete single ${table}record`,
       },
-      {
-        method: 'PATCH',
-        path: `${endpoint}`,
-        handler: this.updateMany,
-        config: {
-          description: `Patch many ${table} records`,
-        },
+    },
+    {
+      method: 'PATCH',
+      path: `${endpoint}`,
+      handler: this.updateMany,
+      config: {
+        description: `Patch many ${table} records`,
       },
+    },
+    {
+      method: 'DELETE',
+      path: `${endpoint}`,
+      handler: this.delete,
+      config: {
+        description: `Delete many ${table}record`,
+      },
+    },
     ];
   };
 }

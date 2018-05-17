@@ -1,5 +1,3 @@
-
-
 const Lab = require('lab');
 const sortBy = require('lodash/sortBy');
 const Code = require('code');
@@ -148,6 +146,17 @@ lab.experiment('Test APIClient', () => {
   // DELETE one
   lab.test('The client should delete a record', async () => {
     const res = await client.delete(sessionId);
+  });
+
+  // DELETE many
+  lab.test('The client should delete many records with filter criteria', async () => {
+    const filter = {
+      session_id: { $or: [sessionId, sessionId2] },
+    };
+    const { rowCount, error } = await client.delete(filter);
+
+    Code.expect(error).to.equal(null);
+    Code.expect(rowCount).to.be.greaterThan(0);
   });
 
   // Test validation error handling
