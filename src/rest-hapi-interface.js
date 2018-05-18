@@ -18,22 +18,14 @@ class RestHAPIInterface {
   }
 
   // Methods
-  findOne(request, reply) {
-  }
-  findMany(request, reply) {
-  }
-  create(request, reply) {
-  }
-  updateOne(request, reply) {
-  }
-  updateMany(request, reply) {
-  }
-  replace(request, reply) {
-  }
-  delete(request, reply) {
-  }
-  schemaDefinition(request, reply) {
-  }
+  findOne(request, reply) {}
+  findMany(request, reply) {}
+  create(request, reply) {}
+  updateOne(request, reply) {}
+  updateMany(request, reply) {}
+  replace(request, reply) {}
+  delete(request, reply) {}
+  schemaDefinition(request, reply) {}
 
   /**
    * Get HAPI API handler for GET single record
@@ -83,6 +75,14 @@ class RestHAPIInterface {
    */
   deleteOneRoute() {
     return this._getRoute('DELETE', this.delete.bind(this));
+  }
+
+  /**
+   * Get HAPI API handler for DELETE many records
+   * @reutrn {Object}
+   */
+  deleteManyRoute() {
+    return this._getRoute('DELETE', this.delete.bind(this), true);
   }
 
   /**
@@ -140,6 +140,7 @@ class RestHAPIInterface {
       this.deleteOneRoute(),
       this.updateManyRoute(),
       this.schemaDefinitionRoute(),
+      this.deleteManyRoute(),
     ];
   }
 }

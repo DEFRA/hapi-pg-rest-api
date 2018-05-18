@@ -152,17 +152,32 @@ class APIClient {
   }
 
   /**
-    * Delete record
-    * @param {String} id - the ID of the row to delete
-    * @return {Promise} - resolves when deleted
-    */
+   * Delete record
+   * @param {String|Object} id - the ID of the row to delete, or filter object
+   * @return {Promise} - resolves when deleted
+   */
   async delete(id) {
-    return this.makeRequest({
-      uri: this.getUrl(id),
-      method: 'DELETE',
-      headers: this.config.headers,
-      json: true,
-    });
+    let options;
+
+    if (typeof (id) === 'string') {
+      options = {
+        uri: this.getUrl(id),
+        method: 'DELETE',
+        headers: this.config.headers,
+        json: true,
+      };
+    }
+    else {
+      options = {
+        uri: this.getUrl(),
+        method: 'DELETE',
+        headers: this.config.headers,
+        json: true,
+        qs: { filter: JSON.stringify(id) },
+      };
+    }
+
+    return this.makeRequest(options);
   }
 
 
