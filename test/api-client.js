@@ -150,13 +150,24 @@ lab.experiment('Test APIClient', () => {
 
   // DELETE many
   lab.test('The client should delete many records with filter criteria', async () => {
+    const { data: { session_id: id1 } } = await client.create({
+      ip: '123.123.123.001',
+      session_data: JSON.stringify({ api: 'test' }),
+    });
+
+    const { data: { session_id: id2 } } = await client.create({
+      ip: '123.123.123.002',
+      session_data: JSON.stringify({ api: 'test' }),
+    });
+
+
     const filter = {
-      session_id: { $or: [sessionId, sessionId2] },
+      session_id: { $or: [id1, id2] },
     };
     const { rowCount, error } = await client.delete(filter);
 
     Code.expect(error).to.equal(null);
-    Code.expect(rowCount).to.be.greaterThan(0);
+    Code.expect(rowCount).to.equal(2);
   });
 
   // Test validation error handling
