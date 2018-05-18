@@ -164,12 +164,10 @@ lab.experiment('Test APIClient', () => {
       ip: '123.123.123.001',
       session_data: JSON.stringify({ api: 'test' }),
     });
-
     const { data: { session_id: id2 } } = await client.create({
       ip: '123.123.123.002',
       session_data: JSON.stringify({ api: 'test' }),
     });
-
 
     const filter = {
       session_id: { $or: [id1, id2] },
