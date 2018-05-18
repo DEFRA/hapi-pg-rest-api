@@ -3,6 +3,16 @@
   "version": "2.0.7",
   "description": "Creates simple RESTful API routes in a HAPI application linked to a Postgres DB table ",
   "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/DEFRA/hapi-pg-rest-api/issues"
+  },
+  "homepage": {
+    "url": "https://github.com/DEFRA/hapi-pg-rest-api#readme"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DEFRA/hapi-pg-rest-api.git"
+  },
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
     "test": "node node_modules/lab/bin/lab -t 90 -m 0 --coverage-path ./src/"
@@ -10,8 +20,8 @@
   "engines": {
     "node": ">=8.0"
   },
-  "author": "",
-  "license": "OGLv3",
+  "author": "Department for Environment, Food & Rural Affairs",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "joi": "^13.1.0",
     "lodash": "^4.17.4",

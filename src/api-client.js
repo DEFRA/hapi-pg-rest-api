@@ -180,6 +180,20 @@ class APIClient {
     return this.makeRequest(options);
   }
 
+
+  /**
+   * Get schema
+   * @return {Promise} - resolves with schema data {jsonSchema : {}, config : {}}
+   */
+  async schema() {
+    return this.makeRequest({
+      uri: this.getUrl('schema'),
+      method: 'GET',
+      headers: this.config.headers,
+      json: true,
+    });
+  }
+
   /**
    * Make request with request-promise-native
    * @param {Object} options - request promise options
