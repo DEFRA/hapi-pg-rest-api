@@ -20,6 +20,7 @@ lab.experiment('Test GET entity/entities', () => {
       payload: {
         ip: '127.0.0.1',
         session_data: JSON.stringify({ username: 'bob' }),
+        email: 'mail@example.com',
       },
     };
 
@@ -140,10 +141,6 @@ lab.experiment('Test GET entity/entities', () => {
 
 
     Code.expect(payload.error).to.equal(null);
-    // Code.expect(payload.data.session_id).to.be.a.string();
-    //
-    // // Check calculated field
-    // Code.expect(payload.data.added_field).to.equal('ROW-0');
   });
 
   lab.test('The API should filter records using $gt query on date field', async () => {
@@ -152,6 +149,25 @@ lab.experiment('Test GET entity/entities', () => {
       url: `/api/1.0/sessions?filter=${JSON.stringify({
         date_created: {
           $gt: '2018-01-01',
+        },
+      })}`,
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(200);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+
+    Code.expect(payload.error).to.equal(null);
+  });
+
+  lab.test('The API should filter records using $ilike for partial match on email field', async () => {
+    const request = {
+      method: 'GET',
+      url: `/api/1.0/sessions?filter=${JSON.stringify({
+        email: {
+          $ilike: '%example.com',
         },
       })}`,
     };
@@ -200,6 +216,22 @@ lab.experiment('Test GET entity/entities', () => {
     Code.expect(payload.error).to.equal(null);
     Code.expect(payload.data[0].session_id).to.equal(sessionId);
     Code.expect(payload.data.length).to.equal(1);
+  });
+
+  lab.test('The API should filter the list of records on JSON property', async () => {
+    const request = {
+      method: 'GET',
+      url: `/api/1.0/sessions?filter=${JSON.stringify({ 'session_data->>username': 'bob' })}`,
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(200);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+
+    Code.expect(payload.error).to.equal(null);
+    Code.expect(payload.data[0].session_data.username).to.equal('bob');
   });
 
   lab.test('The API should reject filter request where array item is invalid', async () => {
@@ -252,21 +284,42 @@ lab.experiment('Test GET entity/entities', () => {
     Code.expect(sessionIds.join(',')).to.equal(sortBy(sessionIds).join(','));
   });
 
-
-  lab.test('The API should reject invalid sort key', async () => {
+  lab.test('The API should sort on a nested JSON field', async () => {
     const request = {
       method: 'GET',
-      url: `/api/1.0/sessions?sort=${JSON.stringify({ session_id: 1, nonexistent_field: 1 })}`,
+      url: `/api/1.0/sessions?sort=${JSON.stringify({ 'session_data->>username': 1 })}`,
     };
 
     const res = await server.inject(request);
-    Code.expect(res.statusCode).to.equal(400);
+    Code.expect(res.statusCode).to.equal(200);
 
     // Check payload
     const payload = JSON.parse(res.payload);
 
-    Code.expect(payload.error.name).to.equal('ValidationError');
+    Code.expect(payload.error).to.equal(null);
+    Code.expect(payload.data).to.be.an.array();
+
+    // Verify sort order
+    const usernames = payload.data.map(item => item.session_data.username);
+    Code.expect(usernames.join(',')).to.equal(sortBy(usernames).join(','));
   });
+
+
+  // lab.test('The API should reject invalid sort key', async () => {
+  //   const request = {
+  //     method: 'GET',
+  //     url: `/api/1.0/sessions?sort=${JSON.stringify({ session_id: 1, nonexistent_field: 1 })}`,
+  //   };
+  //
+  //   const res = await server.inject(request);
+  //   Code.expect(res.statusCode).to.equal(400);
+  //
+  //   // Check payload
+  //   const payload = JSON.parse(res.payload);
+  //
+  //   Code.expect(payload.error.name).to.equal('ValidationError');
+  // });
+
 
   lab.test('The API should sort the list of records ascending', async () => {
     const request = {

@@ -34,9 +34,14 @@ class Request {
         return value;
       }
       const values = [];
-      objectWalk(value, (val) => {
+      objectWalk(value, (val, key) => {
         // Scalars
         if (typeof (val) !== 'object') {
+          // When using like/ilike, skip field validation as the value is only
+          // partial
+          if (key.match(/^\$i?like$/i)) {
+            return;
+          }
           values.push(val);
         }
       });
@@ -57,27 +62,29 @@ class Request {
     const filterValues = Request.getFilterValues(result.filter);
 
     // Validate filter
+    // Note: we allowUnknown because if querying on JSON property, the object
+    // key will not match a known fieldname
     const fSchema = mapValues(this.config.validation, value => [value, Joi.array().items(value)]);
-    const { error: filterError } = Joi.validate(filterValues, fSchema);
+    const { error: filterError } = Joi.validate(filterValues, fSchema, {
+      allowUnknown: true,
+    });
     if (filterError) {
       return filterError;
     }
+
+
     // Validate data
-    const dataSchema = omit(this.config.validation, [this.config.primaryKey]);
+    const {
+      validation, primaryKeyAuto, primaryKey, primaryKeyGuid,
+    } = this.config;
+    const permitPrimaryKey = (!primaryKeyAuto && !primaryKeyGuid);
+    const dataSchema = permitPrimaryKey ? validation : omit(validation, [primaryKey]);
     const { error: dataError } = Joi.validate(result.data, dataSchema);
     if (dataError) {
       return dataError;
     }
-    // Validate sort
-    const sortError = Object.keys(result.sort).reduce((memo, sortKey) => {
-      if (memo || sortKey in this.config.validation) {
-        return memo;
-      }
-      return new ValidationError(`Sort field '${sortKey}' not defined in validation config`);
-    }, null);
-    if (sortError) {
-      return sortError;
-    }
+
+
     // Validate pagination
     if (result.pagination) {
       const pSchema = { page: Joi.number().min(1), perPage: Joi.number().default(100).min(1) };

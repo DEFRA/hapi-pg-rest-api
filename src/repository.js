@@ -1,5 +1,7 @@
 const builder = require('mongo-sql');
-const { mapValues } = require('lodash');
+const {
+  mapValues,
+} = require('lodash');
 
 class Repository {
   /**
@@ -20,6 +22,9 @@ class Repository {
    * @return {Promise} resolves with PostGres result
    */
   dbQuery(query, queryParams) {
+    if (this.config.showSql) {
+      console.log(query, queryParams);
+    }
     return this.config.connection.query(query, queryParams);
   }
 
@@ -40,7 +45,9 @@ class Repository {
    * @return {Promise} resolves with result of DB query
    */
   findRowCount(filter) {
-    const { table } = this.config;
+    const {
+      table,
+    } = this.config;
 
     const query = {
       type: 'select',
@@ -63,7 +70,9 @@ class Repository {
    * @param {Array} columns - specify columns
    */
   find(filter, sort, pagination, columns) {
-    const { table } = this.config;
+    const {
+      table,
+    } = this.config;
 
     const query = {
       type: 'select',
@@ -90,7 +99,10 @@ class Repository {
    * @return {Promise} resolves with db result
    */
   create(data, columns = null) {
-    const { table, upsert } = this.config;
+    const {
+      table,
+      upsert,
+    } = this.config;
     const fields = Object.keys(data);
     const queryParams = Object.values(data);
     const values = fields.map((value, i) => `$${i + 1}`);
@@ -110,7 +122,9 @@ class Repository {
 
 
   update(filter, data) {
-    const { table } = this.config;
+    const {
+      table,
+    } = this.config;
 
     const query = {
       type: 'update',
@@ -123,7 +137,9 @@ class Repository {
   }
 
   delete(filter) {
-    const { table } = this.config;
+    const {
+      table,
+    } = this.config;
 
     const query = {
       type: 'delete',
