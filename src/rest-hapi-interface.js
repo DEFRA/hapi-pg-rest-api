@@ -80,7 +80,7 @@ class RestHAPIInterface {
    * @reutrn {Object}
    */
   deleteManyRoute () {
-    return this.getRoute('DELETE', this.delete.bind(this), true);
+    return this._getRoute('DELETE', this.delete.bind(this), true);
   }
 
   /**

@@ -3,21 +3,21 @@ const sortBy = require('lodash/sortBy');
 const Code = require('code');
 const rp = require('request-promise-native').defaults({
   proxy: null,
-  strictSSL: false,
+  strictSSL: false
 });
 
 const lab = Lab.script();
-const server = require('../server.js');
+require('../server.js');
 
 // server.start();
 const APIClient = require('../src/api-client.js');
 
 const client = new APIClient(rp, {
-  endpoint: 'http://localhost:8000/api/1.0/sessions',
+  endpoint: 'http://localhost:8000/api/1.0/sessions'
 });
 
 const client2 = new APIClient(rp, {
-  endpoint: 'http://localhost:8000/api/1.0/{ip}/sessions',
+  endpoint: 'http://localhost:8000/api/1.0/{ip}/sessions'
 });
 
 let sessionId;
@@ -28,48 +28,43 @@ lab.experiment('Test APIClient', () => {
   lab.test('The client should get the API schema', async () => {
     const { data } = await client.schema();
 
-
     Code.expect(data.jsonSchema).to.be.an.object();
     Code.expect(data.config).to.be.an.object();
   });
-
 
   // POST
   lab.test('The client should create a record', async () => {
     const { data } = await client.create({
       ip: '255.255.255.255',
-      session_data: JSON.stringify({ api: 'test' }),
+      session_data: JSON.stringify({ api: 'test' })
     });
     sessionId = data.session_id;
     Code.expect(sessionId).to.be.a.string();
 
     const { data: data2 } = await client.create({
       ip: '127.0.0.1',
-      session_data: JSON.stringify({ api: 'test2' }),
+      session_data: JSON.stringify({ api: 'test2' })
     });
     sessionId2 = data2.session_id;
     Code.expect(sessionId2).to.be.a.string();
   });
 
-
   // POST
   lab.test('The client should create a record and only return certain columns', async () => {
     const { data } = await client.create({
       ip: '255.255.255.255',
-      session_data: JSON.stringify({ api: 'test' }),
+      session_data: JSON.stringify({ api: 'test' })
     }, ['ip']);
 
     const keys = Object.keys(data);
     Code.expect(keys).to.equal(['ip']);
   });
 
-
   // GET one
   lab.test('The client should find a single record', async () => {
     const { data } = await client.findOne(sessionId);
     Code.expect(data.ip).to.equal('255.255.255.255');
   });
-
 
   lab.test('The client should find a single record and only select certain fields', async () => {
     const { data } = await client.findOne(sessionId, ['session_data']);
@@ -93,13 +88,11 @@ lab.experiment('Test APIClient', () => {
     Code.expect(data.length).to.equal(1);
   });
 
-
   // GET many with pagination
   lab.test('The client should find all records', async () => {
     const { data } = await client.findMany({}, {}, { page: 1, perPage: 1 });
     Code.expect(data.length).to.equal(1);
   });
-
 
   // GET many - filtered
   lab.test('The client should find records with filtering', async () => {
@@ -138,7 +131,6 @@ lab.experiment('Test APIClient', () => {
     });
   });
 
-
   // PATCH one
   lab.test('The client should update a record', async () => {
     const { data, rowCount } = await client.updateOne(sessionId, { ip: '0.0.0.0' });
@@ -149,28 +141,29 @@ lab.experiment('Test APIClient', () => {
 
   // PATCH many
   lab.test('The client should update many records', async () => {
-    const { rowCount, data } = await client.updateMany({ session_id: { $or: [sessionId, sessionId2] } }, { ip: '0.0.0.0' });
+    const { rowCount } = await client.updateMany({ session_id: { $or: [sessionId, sessionId2] } }, { ip: '0.0.0.0' });
     Code.expect(rowCount).to.equal(2);
   });
 
   // DELETE one
   lab.test('The client should delete a record', async () => {
     const res = await client.delete(sessionId);
+    Code.expect(res.error).to.equal(null);
   });
 
   // DELETE many
   lab.test('The client should delete many records with filter criteria', async () => {
     const { data: { session_id: id1 } } = await client.create({
       ip: '123.123.123.001',
-      session_data: JSON.stringify({ api: 'test' }),
+      session_data: JSON.stringify({ api: 'test' })
     });
     const { data: { session_id: id2 } } = await client.create({
       ip: '123.123.123.002',
-      session_data: JSON.stringify({ api: 'test' }),
+      session_data: JSON.stringify({ api: 'test' })
     });
 
     const filter = {
-      session_id: { $or: [id1, id2] },
+      session_id: { $or: [id1, id2] }
     };
     const { rowCount, error } = await client.delete(filter);
 
@@ -181,7 +174,7 @@ lab.experiment('Test APIClient', () => {
   // Test validation error handling
   lab.test('The client should throw an validation error', async () => {
     const { error } = await client.create({
-      non_existent_field: 'Invalid',
+      non_existent_field: 'Invalid'
     });
     Code.expect(error.name).to.equal('ValidationError');
   });
@@ -190,13 +183,12 @@ lab.experiment('Test APIClient', () => {
   lab.test('The client should throw status errors', async () => {
     try {
       const client2 = new APIClient(rp, {
-        endpoint: 'http://localhost:8000/api/1.0/session',
+        endpoint: 'http://localhost:8000/api/1.0/session'
       });
-      const data = await client2.create({
-        non_existent_field: 'Invalid',
+      await client2.create({
+        non_existent_field: 'Invalid'
       });
-    }
-    catch (error) {
+    } catch (error) {
       Code.expect(error.name).to.equal('StatusCodeError');
     }
   });

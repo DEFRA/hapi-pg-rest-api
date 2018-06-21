@@ -1,5 +1,3 @@
-
-
 /**
  * HAPI server used for testing
  */
@@ -16,20 +14,19 @@ const pool = require('./db');
 // const server = new Hapi.Server({ debug: { request: ['error'] } });
 const server = new Hapi.Server({
   host: 'localhost',
-  port: 8000,
+  port: 8000
 });
-
 
 server.route([
   ...SessionsApi(pool).getRoutes(),
   ...SessionsApiContext(pool).getRoutes(),
   ...AutoPKApi(pool).getRoutes(),
-  ...NumericPKApi(pool).getRoutes(),
+  ...NumericPKApi(pool).getRoutes()
 ]);
 
-async function start() {
+async function start () {
   await server.register({
-    plugin: Blipp,
+    plugin: Blipp
   });
 
   // Start the server if not testing with Lab
@@ -38,6 +35,7 @@ async function start() {
   console.log(`Server running at: ${server.info.uri}`);
   // }
 }
+
 start();
 
 module.exports = server;
