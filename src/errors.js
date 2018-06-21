@@ -9,7 +9,7 @@
  * @class ConfigError
  */
 class ConfigError extends Error {
-  constructor(message) {
+  constructor (message) {
     super(message);
     this.name = 'ConfigError';
   }
@@ -20,7 +20,7 @@ class ConfigError extends Error {
  * @class ValidationError
  */
 class ValidationError extends Error {
-  constructor(message) {
+  constructor (message) {
     super(message);
     this.message = message;
     this.name = 'ValidationError';
@@ -32,7 +32,7 @@ class ValidationError extends Error {
  * @class NotFoundError
  */
 class NotFoundError extends Error {
-  constructor(message) {
+  constructor (message) {
     super(message);
     this.name = 'NotFoundError';
   }
@@ -41,5 +41,5 @@ class NotFoundError extends Error {
 module.exports = {
   ConfigError,
   ValidationError,
-  NotFoundError,
+  NotFoundError
 };

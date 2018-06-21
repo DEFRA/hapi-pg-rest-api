@@ -12,21 +12,20 @@ class APIClient {
    * @param {Object} config
    * @param {String} config.endpoint
    */
-  constructor(rp, config = {}) {
+  constructor (rp, config = {}) {
     const defaults = {
-      headers: {},
+      headers: {}
     };
     this.config = Object.assign({}, defaults, config);
     this.rp = rp;
     this.urlParams = {};
   }
 
-
   /**
    * Sets context, e.g. when endpoint is like /api/{someId}/entity/{id}
    * @param {Object} URL context params
    */
-  setParams(urlParams = {}) {
+  setParams (urlParams = {}) {
     this.urlParams = urlParams;
     return this;
   }
@@ -36,7 +35,7 @@ class APIClient {
    * @param {Mixed} [id] - the ID of the entity to get/update/delete
    * @return {String} URL
    */
-  getUrl(id) {
+  getUrl (id) {
     let url = id ? `${this.config.endpoint}/${id}` : this.config.endpoint;
     // Replace context params in URL
     forEach(this.urlParams, (val, key) => {
@@ -51,9 +50,9 @@ class APIClient {
    * @param {Array} [columns] - the columns to return on insert
    * @return {Promise} - resolves with new row data on success
    */
-  async create(body, columns = null) {
+  async create (body, columns = null) {
     const qs = columns ? {
-      columns: columns.join(','),
+      columns: columns.join(',')
     } : null;
     return this.makeRequest({
       uri: this.getUrl(),
@@ -61,7 +60,7 @@ class APIClient {
       body,
       headers: this.config.headers,
       json: true,
-      qs,
+      qs
     });
   }
 
@@ -71,9 +70,9 @@ class APIClient {
    * @param {Array} [columns] - an array containing column names to select
    * @return {Promise} resolves with single record if found
    */
-  async findOne(id, columns = null) {
+  async findOne (id, columns = null) {
     const qs = columns ? {
-      columns: columns.join(','),
+      columns: columns.join(',')
     } : null;
 
     return this.makeRequest({
@@ -81,7 +80,7 @@ class APIClient {
       method: 'GET',
       headers: this.config.headers,
       json: true,
-      qs,
+      qs
     });
   }
 
@@ -92,10 +91,10 @@ class APIClient {
    * @param {Object} [pagination] - e.g. {page : 5, perPage, 20}
    * @param {Array} [columns] - an array containing field names to select
    */
-  async findMany(filter = {}, sort = {}, pagination = null, columns = null) {
+  async findMany (filter = {}, sort = {}, pagination = null, columns = null) {
     const qs = {
       filter: JSON.stringify(filter),
-      sort: JSON.stringify(sort),
+      sort: JSON.stringify(sort)
     };
     if (pagination) {
       qs.pagination = JSON.stringify(pagination);
@@ -109,7 +108,7 @@ class APIClient {
       method: 'GET',
       headers: this.config.headers,
       qs,
-      json: true,
+      json: true
     });
   }
 
@@ -120,9 +119,9 @@ class APIClient {
    * @param {Array} [columns] - the columns to select
    * @return {Promise} - resolves with API response
    */
-  async updateOne(id, body, columns = null) {
+  async updateOne (id, body, columns = null) {
     const qs = columns ? {
-      columns: columns.join(','),
+      columns: columns.join(',')
     } : null;
     return this.makeRequest({
       uri: this.getUrl(id),
@@ -130,7 +129,7 @@ class APIClient {
       headers: this.config.headers,
       body,
       json: true,
-      qs,
+      qs
     });
   }
 
@@ -140,14 +139,14 @@ class APIClient {
    * @param {Object} body - the data to update
    * @return {Promise} - resolves with {data, rowCount}
    */
-  async updateMany(filter, body) {
+  async updateMany (filter, body) {
     return this.makeRequest({
       uri: this.getUrl(),
       method: 'PATCH',
       headers: this.config.headers,
       body,
       qs: { filter: JSON.stringify(filter) },
-      json: true,
+      json: true
     });
   }
 
@@ -180,17 +179,16 @@ class APIClient {
     return this.makeRequest(options);
   }
 
-
   /**
    * Get schema
    * @return {Promise} - resolves with schema data {jsonSchema : {}, config : {}}
    */
-  async schema() {
+  async schema () {
     return this.makeRequest({
       uri: this.getUrl('schema'),
       method: 'GET',
       headers: this.config.headers,
-      json: true,
+      json: true
     });
   }
 
@@ -198,11 +196,10 @@ class APIClient {
    * Make request with request-promise-native
    * @param {Object} options - request promise options
    */
-  async makeRequest(options) {
+  async makeRequest (options) {
     try {
       return await this.rp(options);
-    }
-    catch (error) {
+    } catch (error) {
       // API error
       if (error.error.error.name) {
         return { data: null, error: error.error.error };
