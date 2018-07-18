@@ -63,12 +63,11 @@ class Request {
     // key will not match a known fieldname
     const fSchema = mapValues(this.config.validation, value => [value, Joi.array().items(value)]);
     const { error: filterError } = Joi.validate(filterValues, fSchema, {
-      allowUnknown: true,
+      allowUnknown: true
     });
     if (filterError) {
       return filterError;
     }
-
 
     // Validate data
     const {
@@ -76,11 +75,21 @@ class Request {
     } = this.config;
     const permitPrimaryKey = (!primaryKeyAuto && !primaryKeyGuid);
     const dataSchema = permitPrimaryKey ? validation : omit(validation, [primaryKey]);
-    const { error: dataError } = Joi.validate(result.data, dataSchema);
-    if (dataError) {
-      return dataError;
-    }
 
+    if (isArray(result.data)) {
+      const errors = result.data.reduce((acc, row) => {
+        const { error } = Joi.validate(row, dataSchema);
+        return error ? [...acc, error] : acc;
+      }, []);
+      if (errors.length) {
+        return errors;
+      }
+    } else {
+      const { error: dataError } = Joi.validate(result.data, dataSchema);
+      if (dataError) {
+        return dataError;
+      }
+    }
 
     // Validate pagination
     if (result.pagination) {

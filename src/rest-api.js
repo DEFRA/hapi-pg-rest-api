@@ -8,7 +8,7 @@ const uuidV4 = require('uuid/v4');
 const { ConfigError, NotFoundError } = require('./errors');
 const Request = require('./request.js');
 const Repository = require('./repository.js');
-const { mapValues } = require('lodash');
+const { mapValues, isArray } = require('lodash');
 // @source {@link https://stackoverflow.com/questions/7905929/how-to-test-valid-uuid-guid}
 const guidRegex = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
 const RestHAPIInterface = require('./rest-hapi-interface');
@@ -175,17 +175,30 @@ class HAPIRestAPI extends RestHAPIInterface {
 
       // Auto-generate primary key
       if (!this.config.primaryKeyAuto && this.config.primaryKeyGuid) {
-        data[primaryKey] = uuidV4();
+        if (isArray(data)) {
+          for (let row of data) {
+            row[primaryKey] = uuidV4();
+          }
+        } else {
+          data[primaryKey] = uuidV4();
+        }
       }
 
       // Set on create timestamp
       if (this.config.onCreateTimestamp) {
-        data[this.config.onCreateTimestamp] = moment().format('YYYY-MM-DD HH:mm:ss');
+        const ts = moment().format('YYYY-MM-DD HH:mm:ss');
+        if (isArray(data)) {
+          for (let row of data) {
+            row[this.config.onCreateTimestamp] = ts;
+          }
+        } else {
+          data[this.config.onCreateTimestamp] = ts;
+        }
       }
 
-      const result = await this.repo.create(data, command.columns);
+      const { rows } = await this.repo.create(data, command.columns);
 
-      return h.response({ data: result.rows[0], error: null }).code(201);
+      return h.response({ data: rows.length === 1 ? rows[0] : rows, error: null }).code(201);
     } catch (error) {
       return this.errorReply(error, h);
     }
