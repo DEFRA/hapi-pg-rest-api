@@ -155,7 +155,7 @@ class APIClient {
    * @param {String|Object} id - the ID of the row to delete, or filter object
    * @return {Promise} - resolves when deleted
    */
-  async delete(id) {
+  async delete (id) {
     let options;
 
     if (typeof (id) === 'string') {
@@ -163,16 +163,15 @@ class APIClient {
         uri: this.getUrl(id),
         method: 'DELETE',
         headers: this.config.headers,
-        json: true,
+        json: true
       };
-    }
-    else {
+    } else {
       options = {
         uri: this.getUrl(),
         method: 'DELETE',
         headers: this.config.headers,
         json: true,
-        qs: { filter: JSON.stringify(id) },
+        qs: { filter: JSON.stringify(id) }
       };
     }
 

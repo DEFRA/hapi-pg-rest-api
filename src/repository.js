@@ -122,8 +122,6 @@ class Repository {
 
     const { table, upsert } = this.config;
     const fields = Object.keys(insertData[0]);
-    // const queryParams = Object.values(data);
-    const values = fields.map((value, i) => `$${i + 1}`);
 
     let query = `INSERT INTO ${table} (${fields.join(',')}) VALUES `;
 
