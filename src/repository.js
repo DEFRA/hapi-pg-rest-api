@@ -1,7 +1,9 @@
 const builder = require('mongo-sql');
 const {
   mapValues,
+  isArray
 } = require('lodash');
+const { ValidationError } = require('./errors');
 
 class Repository {
   /**
@@ -21,7 +23,7 @@ class Repository {
    * @param {Array} queryParams - bound query params
    * @return {Promise} resolves with PostGres result
    */
-  dbQuery(query, queryParams) {
+  dbQuery (query, queryParams) {
     if (this.config.showSql) {
       console.log(query, queryParams);
     }
@@ -87,18 +89,51 @@ class Repository {
   }
 
   /**
+   * Checks an array ensuring all objects in the array have the same keys
+   * @param {Array} data
+   * @return {Boolean}
+   */
+  checkIdenticalKeys (data) {
+    const createKeyStr = (row) => {
+      return Object.keys(row).sort().join(',');
+    };
+    const firstRow = createKeyStr(data[0]);
+    for (let row of data) {
+      if (createKeyStr(row) !== firstRow) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Create a record
-   * @param {Object} data
+   * @param {Object|Array} data
    * @param {Array} [columns] - columns to return during insert
    * @return {Promise} resolves with db result
    */
   create (data, columns = null) {
-    const { table, upsert } = this.config;
-    const fields = Object.keys(data);
-    const queryParams = Object.values(data);
-    const values = fields.map((value, i) => `$${i + 1}`);
+    // Convert all data to array
+    const insertData = isArray(data) ? data : [data];
 
-    let query = `INSERT INTO ${table} (${fields.join(',')}) VALUES (${values.join(',')})`;
+    if (!this.checkIdenticalKeys(insertData)) {
+      throw new ValidationError('All objects must have same keys in multi-insert');
+    }
+
+    const { table, upsert } = this.config;
+    const fields = Object.keys(insertData[0]);
+
+    let query = `INSERT INTO ${table} (${fields.join(',')}) VALUES `;
+
+    let queryParams = [];
+    const rows = insertData.map(row => {
+      const values = fields.map((value, i) => `$${i + 1 + queryParams.length}`);
+      // Add values to query params
+      queryParams = [...queryParams, ...Object.values(row)];
+      return '(' + values.join(',') + ')';
+    });
+
+    query += rows.join(',');
 
     if (upsert) {
       const parts = upsert.set.map(field => `${field}=EXCLUDED.${field}`);
