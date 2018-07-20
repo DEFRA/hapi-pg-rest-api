@@ -89,7 +89,7 @@ lab.experiment('Test APIClient', () => {
   });
 
   // GET many with pagination
-  lab.test('The client should find all records', async () => {
+  lab.test('The client should find all records with pagination', async () => {
     const { data } = await client.findMany({}, {}, { page: 1, perPage: 1 });
     Code.expect(data.length).to.equal(1);
   });
@@ -135,6 +135,15 @@ lab.experiment('Test APIClient', () => {
   lab.test('The client should update a record', async () => {
     const { data, rowCount } = await client.updateOne(sessionId, { ip: '0.0.0.0' });
 
+    Code.expect(data.ip).to.equal('0.0.0.0');
+    Code.expect(rowCount).to.equal(1);
+  });
+
+  // PATCH one
+  lab.test('The client should update a record and return only specific columns', async () => {
+    const { data, rowCount } = await client.updateOne(sessionId, { ip: '0.0.0.0' }, ['ip']);
+
+    Code.expect(Object.keys(data)).to.equal(['ip']);
     Code.expect(data.ip).to.equal('0.0.0.0');
     Code.expect(rowCount).to.equal(1);
   });

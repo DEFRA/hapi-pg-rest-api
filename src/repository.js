@@ -1,9 +1,5 @@
 const builder = require('mongo-sql');
-const {
-  mapValues,
-  isArray
-} = require('lodash');
-const { ValidationError } = require('./errors');
+const { mapValues, isArray } = require('lodash');
 
 class Repository {
   /**

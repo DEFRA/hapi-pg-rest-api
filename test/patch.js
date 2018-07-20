@@ -1,5 +1,4 @@
 
-
 const Lab = require('lab');
 
 const lab = Lab.script();
@@ -18,8 +17,8 @@ lab.experiment('Test PATCH entity', () => {
       url: '/api/1.0/sessions',
       payload: {
         ip: '127.0.0.1',
-        session_data: JSON.stringify({ username: 'bob' }),
-      },
+        session_data: JSON.stringify({ username: 'bob' })
+      }
     };
 
     const res = await server.inject(request);
@@ -35,8 +34,8 @@ lab.experiment('Test PATCH entity', () => {
       method: 'PATCH',
       url: `/api/1.0/sessions/${sessionId}`,
       payload: {
-        ip: '10.0.1.1',
-      },
+        ip: '10.0.1.1'
+      }
     };
 
     const res = await server.inject(request);
@@ -47,15 +46,33 @@ lab.experiment('Test PATCH entity', () => {
     Code.expect(payload.error).to.equal(null);
   });
 
+  lab.test('The API should support Joi transformation of field values', async () => {
+    const request = {
+      method: 'PATCH',
+      url: `/api/1.0/sessions/${sessionId}`,
+      payload: {
+        email: '  BOB@EXAMPLE.COM   '
+      }
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(200);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+    Code.expect(payload.error).to.equal(null);
+    Code.expect(payload.data.email).to.equal('bob@example.com');
+  });
+
   lab.test('The API should bulk update by query filter', async () => {
     const request = {
       method: 'PATCH',
       url: `/api/1.0/sessions?filter=${JSON.stringify({
-        ip: '10.0.1.1',
+        ip: '10.0.1.1'
       })}`,
       payload: {
-        ip: '127.0.0.1',
-      },
+        ip: '127.0.0.1'
+      }
     };
 
     const res = await server.inject(request);
@@ -72,8 +89,8 @@ lab.experiment('Test PATCH entity', () => {
       method: 'PATCH',
       url: '/api/1.0/sessions',
       payload: {
-        ip: '127.0.0.1',
-      },
+        ip: '127.0.0.1'
+      }
     };
 
     const res = await server.inject(request);
@@ -84,14 +101,13 @@ lab.experiment('Test PATCH entity', () => {
     Code.expect(payload.error.name).to.equal('ValidationError');
   });
 
-
   lab.test('The API should reject an invalid ID', async () => {
     const request = {
       method: 'PATCH',
       url: '/api/1.0/sessions/invalid-guid',
       payload: {
-        ip: '10.0.1.1',
-      },
+        ip: '10.0.1.1'
+      }
     };
 
     const res = await server.inject(request);
@@ -107,8 +123,8 @@ lab.experiment('Test PATCH entity', () => {
       method: 'GET',
       url: `/api/1.0/sessions/${uuidV4()}`,
       payload: {
-        ip: '10.0.1.1',
-      },
+        ip: '10.0.1.1'
+      }
     };
 
     const res = await server.inject(request);
@@ -125,8 +141,8 @@ lab.experiment('Test PATCH entity', () => {
       method: 'PATCH',
       url: `/api/1.0/sessions/${sessionId}`,
       payload: {
-        ip: 123,
-      },
+        ip: 123
+      }
     };
 
     const res = await server.inject(request);
