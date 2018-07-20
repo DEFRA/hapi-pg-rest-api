@@ -163,7 +163,7 @@ lab.experiment('Test APIClient', () => {
     });
 
     const filter = {
-      session_id: { $or: [id1, id2] }
+      session_id: {$in: [id1, id2]}
     };
     const { rowCount, error } = await client.delete(filter);
 

@@ -38,8 +38,16 @@ class NotFoundError extends Error {
   }
 }
 
+class NotImplementedError extends Error {
+  constructor (message) {
+    super(message);
+    this.name = 'NotImplementedError';
+  }
+}
+
 module.exports = {
   ConfigError,
   ValidationError,
-  NotFoundError
+  NotFoundError,
+  NotImplementedError
 };
