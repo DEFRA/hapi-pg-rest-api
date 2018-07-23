@@ -39,7 +39,7 @@ class HAPIRestAPI {
 
     // Add routes as methods to this instance for backwards compatability
     for (let routeName in this.routes) {
-      this[routeName] = this.routes[routeName];
+      this[routeName] = () => this.routes[routeName];
     }
   }
 
