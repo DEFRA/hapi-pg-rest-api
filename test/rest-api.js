@@ -75,7 +75,7 @@ lab.experiment('Test REST API', () => {
     Code.expect(Sessions.findOneRoute).to.be.a.function();
     Code.expect(Sessions.createRoute).to.be.a.function();
     Code.expect(Sessions.updateOneRoute).to.be.a.function();
-    Code.expect(Sessions.replaceOne).to.be.a.function();
+    Code.expect(Sessions.replaceOneRoute).to.be.a.function();
     Code.expect(Sessions.deleteOneRoute).to.be.a.function();
     Code.expect(Sessions.updateManyRoute).to.be.a.function();
     Code.expect(Sessions.schemaDefinitionRoute).to.be.a.function();

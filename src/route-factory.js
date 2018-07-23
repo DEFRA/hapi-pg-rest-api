@@ -41,7 +41,7 @@ module.exports = (config) => {
     findOneRoute: createRoute(rest, 'GET', controller.findOne),
     createRoute: createRoute(rest, 'POST', controller.create),
     updateOneRoute: createRoute(rest, 'PATCH', controller.updateOne),
-    replaceOne: createRoute(rest, 'PUT', controller.replaceOne),
+    replaceOneRoute: createRoute(rest, 'PUT', controller.replaceOne),
     deleteOneRoute: createRoute(rest, 'DELETE', controller.deleteOne),
     updateManyRoute: createRoute(rest, 'PATCH', controller.updateMany, true),
     schemaDefinitionRoute: createSchemaRoute(rest),
