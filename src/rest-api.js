@@ -4,7 +4,6 @@
  * @module rest-api
  */
 const { ConfigError } = require('./errors');
-const Repository = require('./repository.js');
 const routeFactory = require('./route-factory');
 const manager = require('./manager');
 
