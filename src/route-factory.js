@@ -1,10 +1,7 @@
-const Joi = require('joi');
 const controller = require('./controller');
 const schemaController = require('./schema-controller');
-const { set } = require('lodash');
 
-const createRoute = (pluginConfig, method, handler, isMany = false) => {
-  const { config } = pluginConfig;
+const createRoute = (config, method, handler, isMany = false) => {
   const { endpoint, table } = config;
   const description = `${method} ${isMany ? 'many' : 'single'} ${table} ${isMany ? 'records' : 'record'}`;
   const path = (isMany || method === 'POST') ? endpoint : `${endpoint}/{id}`;
@@ -15,14 +12,14 @@ const createRoute = (pluginConfig, method, handler, isMany = false) => {
     config: {
       description,
       plugins: {
-        hapiPgRestAPI: pluginConfig
+        hapiPgRestAPI: config
       }
     }
   };
 };
 
-const createSchemaRoute = (pluginConfig) => {
-  const { config: { endpoint, table } } = pluginConfig;
+const createSchemaRoute = (config) => {
+  const { endpoint, table } = config;
   return {
     method: 'GET',
     path: `${endpoint}/schema`,
@@ -30,27 +27,24 @@ const createSchemaRoute = (pluginConfig) => {
     config: {
       description: `Get API schema definition for ${table}`,
       plugins: {
-        hapiPgRestAPI: pluginConfig
+        hapiPgRestAPI: config
       }
     }
   };
 };
 
-module.exports = (config, repo) => {
-  const pluginConfig = {
-    config,
-    repo
-  };
+module.exports = (config) => {
+  const { connection, ...rest } = config;
 
   return {
-    findManyRoute: createRoute(pluginConfig, 'GET', controller.findMany, true),
-    findOneRoute: createRoute(pluginConfig, 'GET', controller.findOne),
-    createRoute: createRoute(pluginConfig, 'POST', controller.create),
-    updateOneRoute: createRoute(pluginConfig, 'PATCH', controller.updateOne),
-    replaceOne: createRoute(pluginConfig, 'PUT', controller.replaceOne),
-    deleteOneRoute: createRoute(pluginConfig, 'DELETE', controller.deleteOne),
-    updateManyRoute: createRoute(pluginConfig, 'PATCH', controller.updateMany, true),
-    schemaDefinitionRoute: createSchemaRoute(pluginConfig),
-    deleteManyRoute: createRoute(pluginConfig, 'DELETE', controller.deleteMany, true)
+    findManyRoute: createRoute(rest, 'GET', controller.findMany, true),
+    findOneRoute: createRoute(rest, 'GET', controller.findOne),
+    createRoute: createRoute(rest, 'POST', controller.create),
+    updateOneRoute: createRoute(rest, 'PATCH', controller.updateOne),
+    replaceOne: createRoute(rest, 'PUT', controller.replaceOne),
+    deleteOneRoute: createRoute(rest, 'DELETE', controller.deleteOne),
+    updateManyRoute: createRoute(rest, 'PATCH', controller.updateMany, true),
+    schemaDefinitionRoute: createSchemaRoute(rest),
+    deleteManyRoute: createRoute(rest, 'DELETE', controller.deleteMany, true)
   };
 };

@@ -1,6 +1,7 @@
 const moment = require('moment');
 const uuidV4 = require('uuid/v4');
 const { isArray } = require('lodash');
+const manager = require('./manager');
 const { getRequestData, getPaginationResponse, errorReply } = require('./helpers');
 const { NotFoundError, ValidationError, NotImplementedError } = require('./errors');
 const { validateCreatePayload, validateFilter, validateUpdatePayload } = require('./validators');
@@ -10,7 +11,8 @@ const { validateCreatePayload, validateFilter, validateUpdatePayload } = require
  * @param {Mixed} request.params.id - the primary key value
  */
 const findOne = async (request, h) => {
-  const { config, repo } = request.route.settings.plugins.hapiPgRestAPI;
+  const config = request.route.settings.plugins.hapiPgRestAPI;
+  const repo = manager.get(config.name);
   const { columns, filter } = getRequestData(request, config);
 
   const { error } = validateFilter(filter, config);
@@ -43,8 +45,8 @@ const findOne = async (request, h) => {
  * @param {String} request.query.columns - Comma separated column list
  */
 const findMany = async (request, h) => {
-  const { config, repo } = request.route.settings.plugins.hapiPgRestAPI;
-
+  const config = request.route.settings.plugins.hapiPgRestAPI;
+  const repo = manager.get(config.name);
   const { filter, sort, pagination, columns } = getRequestData(request, config);
 
   const { error } = validateFilter(filter, config);
@@ -70,7 +72,8 @@ const findMany = async (request, h) => {
  * Create single/multiple record
  */
 const create = async (request, h) => {
-  const { config, repo } = request.route.settings.plugins.hapiPgRestAPI;
+  const config = request.route.settings.plugins.hapiPgRestAPI;
+  const repo = manager.get(config.name);
   const { columns, data: payload } = getRequestData(request, config);
   const { error, value } = validateCreatePayload(payload, config);
 
@@ -116,7 +119,8 @@ const create = async (request, h) => {
  * @param {String} [request.query.columns] - columns to output in reply
  */
 const updateOne = async (request, h) => {
-  const { config, repo } = request.route.settings.plugins.hapiPgRestAPI;
+  const config = request.route.settings.plugins.hapiPgRestAPI;
+  const repo = manager.get(config.name);
   const { columns, filter } = getRequestData(request, config);
 
   const { error } = validateFilter(filter, config);
@@ -167,7 +171,8 @@ const replaceOne = async (request, h) => {
  * @param {String} request.query.columns - CSV of columns to return (default *)
  */
 const updateMany = async (request, h) => {
-  const { config, repo } = request.route.settings.plugins.hapiPgRestAPI;
+  const config = request.route.settings.plugins.hapiPgRestAPI;
+  const repo = manager.get(config.name);
   const { filter, columns } = getRequestData(request, config);
 
   const { error } = validateFilter(filter, config, true);
@@ -205,7 +210,8 @@ const updateMany = async (request, h) => {
  * @param {Mixed} request.params.id - the primary key value
  */
 const deleteOne = async (request, h) => {
-  const { config, repo } = request.route.settings.plugins.hapiPgRestAPI;
+  const config = request.route.settings.plugins.hapiPgRestAPI;
+  const repo = manager.get(config.name);
   const { filter } = getRequestData(request, config);
 
   const { error } = validateFilter(filter, config);
@@ -235,7 +241,8 @@ const deleteOne = async (request, h) => {
  * @param {String} request.query.filter - JSON encoded filter object
  */
 const deleteMany = async (request, h) => {
-  const { config, repo } = request.route.settings.plugins.hapiPgRestAPI;
+  const config = request.route.settings.plugins.hapiPgRestAPI;
+  const repo = manager.get(config.name);
 
   const { filter } = getRequestData(request, config);
 

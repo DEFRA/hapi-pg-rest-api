@@ -1,7 +1,7 @@
 const { mapValues } = require('lodash');
 
 const getSchema = async (request, h) => {
-  const { config } = request.route.settings.plugins.hapiPgRestAPI;
+  const config = request.route.settings.plugins.hapiPgRestAPI;
   const { table, primaryKey, primaryKeyAuto, primaryKeyGuid } = config;
   const required = [];
   const properties = mapValues(config.validation, (value, key) => {

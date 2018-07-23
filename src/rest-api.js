@@ -6,6 +6,7 @@
 const { ConfigError } = require('./errors');
 const Repository = require('./repository.js');
 const routeFactory = require('./route-factory');
+const manager = require('./manager');
 
 class HAPIRestAPI {
   constructor (config) {
@@ -16,6 +17,7 @@ class HAPIRestAPI {
 
     // Create config object with defaults
     this.config = Object.assign({
+      name: config.name || config.endpoint.split('/').pop(),
       // Modify data pre-insert
       preInsert: data => data,
       preUpdate: data => data,
@@ -30,9 +32,11 @@ class HAPIRestAPI {
       }
     }, config);
 
-    this.repo = new Repository(this.config);
+    manager.create(this.config);
 
-    this.routes = routeFactory(this.config, this.repo);
+    this.repo = manager.create(this.config);
+
+    this.routes = routeFactory(this.config);
 
     // Add routes as methods to this instance for backwards compatability
     for (let routeName in this.routes) {
