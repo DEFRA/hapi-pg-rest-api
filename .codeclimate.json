@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "exclude_patterns": [
+    "migrations",
+    "node_modules",
+    "test"
+  ]
+}

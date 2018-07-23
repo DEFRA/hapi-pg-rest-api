@@ -7,6 +7,7 @@ const Db = require('../db.js');
 const server = require('../server.js');
 const Code = require('code');
 const RestApi = require('../src/rest-api.js');
+const Sessions = require('../sessions-api.js');
 
 let sandbox;
 
@@ -67,6 +68,18 @@ lab.experiment('Test REST API', () => {
     Code.expect(payload.error.name).to.equal('DBError');
 
     sandbox.restore();
+  });
+
+  lab.test('The API should make available methods that return HAPI route definitions', async () => {
+    Code.expect(Sessions.findManyRoute).to.be.a.function();
+    Code.expect(Sessions.findOneRoute).to.be.a.function();
+    Code.expect(Sessions.createRoute).to.be.a.function();
+    Code.expect(Sessions.updateOneRoute).to.be.a.function();
+    Code.expect(Sessions.replaceOne).to.be.a.function();
+    Code.expect(Sessions.deleteOneRoute).to.be.a.function();
+    Code.expect(Sessions.updateManyRoute).to.be.a.function();
+    Code.expect(Sessions.schemaDefinitionRoute).to.be.a.function();
+    Code.expect(Sessions.deleteManyRoute).to.be.a.function();
   });
 });
 
