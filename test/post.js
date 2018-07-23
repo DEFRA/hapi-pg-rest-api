@@ -27,6 +27,27 @@ lab.experiment('Test POST entity creation', () => {
     Code.expect(payload.data.session_id).to.be.a.string();
   });
 
+  lab.test('The API should support Joi transformation of values such as lowercase, trim', async () => {
+    const request = {
+      method: 'POST',
+      url: '/api/1.0/sessions',
+      payload: {
+        ip: '127.0.0.1',
+        session_data: JSON.stringify({ username: 'bob' }),
+        email: '  MAIL@EXAMPLE.COM '
+      }
+    };
+
+    const res = await server.inject(request);
+    Code.expect(res.statusCode).to.equal(201);
+
+    // Check payload
+    const payload = JSON.parse(res.payload);
+
+    Code.expect(payload.error).to.equal(null);
+    Code.expect(payload.data.email).to.equal('mail@example.com');
+  });
+
   lab.test('The API should create multiple valid records with POST', async () => {
     const request = {
       method: 'POST',

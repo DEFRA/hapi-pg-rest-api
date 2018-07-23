@@ -8,7 +8,6 @@ const SessionsApi = require('./sessions-api.js');
 const SessionsApiContext = require('./sessions-api-context.js');
 const AutoPKApi = require('./auto-pk-api.js');
 const NumericPKApi = require('./numeric-pk-api.js');
-const pool = require('./db');
 
 // Create a server with a host and port
 // const server = new Hapi.Server({ debug: { request: ['error'] } });
@@ -18,10 +17,10 @@ const server = new Hapi.Server({
 });
 
 server.route([
-  ...SessionsApi(pool).getRoutes(),
-  ...SessionsApiContext(pool).getRoutes(),
-  ...AutoPKApi(pool).getRoutes(),
-  ...NumericPKApi(pool).getRoutes()
+  ...SessionsApi.getRoutes(),
+  ...SessionsApiContext.getRoutes(),
+  ...AutoPKApi.getRoutes(),
+  ...NumericPKApi.getRoutes()
 ]);
 
 async function start () {

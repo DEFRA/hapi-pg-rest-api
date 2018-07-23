@@ -1,9 +1,5 @@
 const builder = require('mongo-sql');
-const {
-  mapValues,
-  isArray
-} = require('lodash');
-const { ValidationError } = require('./errors');
+const { mapValues, isArray } = require('lodash');
 
 class Repository {
   /**
@@ -89,24 +85,6 @@ class Repository {
   }
 
   /**
-   * Checks an array ensuring all objects in the array have the same keys
-   * @param {Array} data
-   * @return {Boolean}
-   */
-  checkIdenticalKeys (data) {
-    const createKeyStr = (row) => {
-      return Object.keys(row).sort().join(',');
-    };
-    const firstRow = createKeyStr(data[0]);
-    for (let row of data) {
-      if (createKeyStr(row) !== firstRow) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
    * Create a record
    * @param {Object|Array} data
    * @param {Array} [columns] - columns to return during insert
@@ -115,10 +93,6 @@ class Repository {
   create (data, columns = null) {
     // Convert all data to array
     const insertData = isArray(data) ? data : [data];
-
-    if (!this.checkIdenticalKeys(insertData)) {
-      throw new ValidationError('All objects must have same keys in multi-insert');
-    }
 
     const { table, upsert } = this.config;
     const fields = Object.keys(insertData[0]);
@@ -145,7 +119,7 @@ class Repository {
     return this.dbQuery(query, queryParams);
   }
 
-  update (filter, data) {
+  update (filter, data, columns) {
     const { table } = this.config;
 
     const query = {
@@ -155,7 +129,10 @@ class Repository {
       where: filter
     };
     const result = builder.sql(query);
-    return this.dbQuery(`${result.toString()} RETURNING *`, result.values);
+
+    const sql = result.toString() + ` RETURNING ${columns ? `"${columns.join('","')}"` : '*'}`;
+
+    return this.dbQuery(sql, result.values);
   }
 
   delete (filter) {

@@ -1,7 +1,8 @@
 const Joi = require('joi');
 const HAPIRestAPI = require('./src/rest-api');
+const pool = require('./db');
 
-module.exports = pool => new HAPIRestAPI({
+module.exports = new HAPIRestAPI({
   table: 'numericpk_test',
   connection: pool,
   primaryKey: 'id',
@@ -10,6 +11,6 @@ module.exports = pool => new HAPIRestAPI({
   primaryKeyGuid: false,
   validation: {
     id: Joi.number(),
-    name: Joi.string(),
-  },
+    name: Joi.string()
+  }
 });

@@ -14,8 +14,7 @@ lab.experiment('Test REST API', () => {
   lab.test('Throw error if no validation constraints supplied', async () => {
     try {
       new RestApi({});
-    }
-    catch (error) {
+    } catch (error) {
       Code.expect(error.name).to.equal('ConfigError');
     }
   });
@@ -24,7 +23,7 @@ lab.experiment('Test REST API', () => {
     sandbox = sinon.sandbox.create();
     const query = sandbox.stub(Db, 'query');
     query.throws({
-      code: 23505,
+      code: 23505
     });
 
     const request = {
@@ -32,8 +31,8 @@ lab.experiment('Test REST API', () => {
       url: '/api/1.0/sessions',
       payload: {
         ip: '127.0.0.1',
-        session_data: JSON.stringify({ username: 'bob' }),
-      },
+        session_data: JSON.stringify({ username: 'bob' })
+      }
     };
 
     const res = await server.inject(request);
@@ -49,7 +48,7 @@ lab.experiment('Test REST API', () => {
     sandbox = sinon.sandbox.create();
     const query = sandbox.stub(Db, 'query');
     query.throws({
-      code: 'P0000',
+      code: 'P0000'
     });
 
     const request = {
@@ -57,8 +56,8 @@ lab.experiment('Test REST API', () => {
       url: '/api/1.0/sessions',
       payload: {
         ip: '127.0.0.1',
-        session_data: JSON.stringify({ username: 'bob' }),
-      },
+        session_data: JSON.stringify({ username: 'bob' })
+      }
     };
 
     const res = await server.inject(request);

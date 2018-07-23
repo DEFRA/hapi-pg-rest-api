@@ -1,7 +1,8 @@
 const Joi = require('joi');
 const HAPIRestAPI = require('./src/rest-api');
+const pool = require('./db');
 
-module.exports = pool => new HAPIRestAPI({
+module.exports = new HAPIRestAPI({
   table: 'sessions',
   connection: pool,
   primaryKey: 'session_id',
@@ -10,13 +11,13 @@ module.exports = pool => new HAPIRestAPI({
   onUpdateTimestamp: 'date_updated',
   upsert: {
     fields: ['session_id'],
-    set: ['session_data'],
+    set: ['session_data']
   },
   postSelect: data => data.map((row, i) =>
     // Add a calculated field to data output
     ({
       added_field: `ROW-${i}`,
-      ...row,
+      ...row
     })),
   validation: {
     session_id: Joi.string().guid(),
@@ -24,7 +25,7 @@ module.exports = pool => new HAPIRestAPI({
     session_data: Joi.string(),
     date_created: Joi.string(),
     date_updated: Joi.string().allow(null),
-    email: Joi.string().email(),
+    email: Joi.string().email().lowercase().trim()
   },
-  showSql: true,
+  showSql: true
 });
