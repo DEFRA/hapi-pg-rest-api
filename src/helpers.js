@@ -70,10 +70,6 @@ const errorReply = (error, h) => {
     return formatError(400, error, h);
   }
   // Config error - server issue
-  if (error.name === 'ConfigError') {
-    return formatError(500, error, h);
-  }
-  // Config error - server issue
   if (error.name === 'NotFoundError') {
     return formatError(404, error, h);
   }
@@ -82,8 +78,8 @@ const errorReply = (error, h) => {
   }
 
   // DB error
-  const code = parseInt(error.code, 10);
-  const statusCode = [23505, 23502].includes(code) ? 400 : 500;
+  const { code } = error;
+  const statusCode = [23505, 23502].includes(error.code) ? 400 : 500;
   return h.response({ error: { name: 'DBError', code }, data: null }).code(statusCode);
 };
 
