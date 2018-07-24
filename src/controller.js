@@ -13,7 +13,7 @@ const { validateCreatePayload, validateFilter, validateUpdatePayload } = require
 const findOne = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const repo = manager.get(config.name);
-  const { columns, filter } = getRequestData(request, config);
+  const { columns, filter } = await getRequestData(request, config);
 
   const { error } = validateFilter(filter, config);
   if (error) {
@@ -47,7 +47,7 @@ const findOne = async (request, h) => {
 const findMany = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const repo = manager.get(config.name);
-  const { filter, sort, pagination, columns } = getRequestData(request, config);
+  const { filter, sort, pagination, columns } = await getRequestData(request, config);
 
   const { error } = validateFilter(filter, config);
   if (error) {
@@ -74,7 +74,7 @@ const findMany = async (request, h) => {
 const create = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const repo = manager.get(config.name);
-  const { columns, data: payload } = getRequestData(request, config);
+  const { columns, data: payload } = await getRequestData(request, config);
   const { error, value } = validateCreatePayload(payload, config);
 
   if (error) {
@@ -121,7 +121,7 @@ const create = async (request, h) => {
 const updateOne = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const repo = manager.get(config.name);
-  const { columns, filter } = getRequestData(request, config);
+  const { columns, filter } = await getRequestData(request, config);
 
   const { error } = validateFilter(filter, config);
   if (error) {
@@ -173,7 +173,7 @@ const replaceOne = async (request, h) => {
 const updateMany = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const repo = manager.get(config.name);
-  const { filter, columns } = getRequestData(request, config);
+  const { filter, columns } = await getRequestData(request, config);
 
   const { error } = validateFilter(filter, config, true);
   if (error) {
@@ -212,7 +212,7 @@ const updateMany = async (request, h) => {
 const deleteOne = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const repo = manager.get(config.name);
-  const { filter } = getRequestData(request, config);
+  const { filter } = await getRequestData(request, config);
 
   const { error } = validateFilter(filter, config);
   if (error) {
@@ -244,7 +244,7 @@ const deleteMany = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const repo = manager.get(config.name);
 
-  const { filter } = getRequestData(request, config);
+  const { filter } = await getRequestData(request, config);
 
   const { error } = validateFilter(filter, config, true);
   if (error) {
