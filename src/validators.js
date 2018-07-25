@@ -1,6 +1,5 @@
-const objectWalk = require('object-walk');
 const Joi = require('joi');
-const { omit, isArray, mapValues, isEmpty } = require('lodash');
+const { omit, isArray } = require('lodash');
 const { ValidationError } = require('./errors');
 
 /**
@@ -53,67 +52,20 @@ const validateUpdatePayload = (payload, config) => {
 };
 
 /**
- * Given that a filter query may now contain method params, e.g.
- * { $or : ['x', 'y']}, we need to walk over this object and get all values
- * from the leaf nodes of this object
- * @param {Object} filter, eg {field : 'value'}
- * @return {Object} filter with mongo-style queries converted to an array of values
+ * Validates URL params
+ * This validates the primary key value - for routes that operate on a single entity
+ * @param {Object} params - from HAPI request
+ * @return {Object} Joi validation result
  */
-const getFilterValues = (filter) => {
-  return mapValues(filter, (value) => {
-    if (typeof (value) !== 'object' || isArray(value) || value === null) {
-      return value;
-    }
-    const values = [];
-    objectWalk(value, (val, key) => {
-      // Scalars
-      if (typeof (val) !== 'object') {
-        // When using like/ilike, skip field validation as the value is only
-        // partial
-        if (key.match(/^\$i?like$/i)) {
-          return;
-        }
-        values.push(val);
-      }
-    });
-    return values;
-  });
-};
-
-/**
- * Validates supplied filter options
- * NOTE: don't use the value returned from this for filtering, Joi can adjust
- * mongo-sql specific object such as $or, $in
- *
- * @param {Object} filter
- * @param {Object} config
- * @param {Boolean} isRequired - for update/delete, can specify that the filter is required
- * @return {Object}
- */
-const validateFilter = (filter, config, isRequired = false) => {
-  if (isRequired && isEmpty(filter)) {
-    return { value: undefined, error: new ValidationError('Filter parameter is required') };
-  }
-
-  const filterValues = getFilterValues(filter);
-
-  let schema = mapValues(config.validation, value => [value, Joi.array().items(value)]);
-
-  // Permit additional fields for jsonb
-  for (let key in filterValues) {
-    if (key.match('->')) {
-      const field = key.split('->')[0];
-      if (field in schema) {
-        schema[key] = Joi.any();
-      }
-    }
-  }
-
-  return Joi.validate(filterValues, schema);
+const validateParams = (params, config) => {
+  const data = {
+    [config.primaryKey]: params.id
+  };
+  return Joi.validate(data, config.validation);
 };
 
 module.exports = {
   validateCreatePayload,
   validateUpdatePayload,
-  validateFilter
+  validateParams
 };

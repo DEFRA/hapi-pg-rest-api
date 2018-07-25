@@ -1,10 +1,10 @@
 const moment = require('moment');
 const uuidV4 = require('uuid/v4');
-const { isArray } = require('lodash');
+const { isArray, isEmpty } = require('lodash');
 const manager = require('./manager');
 const { getRequestData, getPaginationResponse, errorReply } = require('./helpers');
 const { NotFoundError, ValidationError, NotImplementedError } = require('./errors');
-const { validateCreatePayload, validateFilter, validateUpdatePayload } = require('./validators');
+const { validateCreatePayload, validateParams, validateUpdatePayload } = require('./validators');
 
 /**
  * Find and return a single record
@@ -15,7 +15,7 @@ const findOne = async (request, h) => {
   const repo = manager.get(config.name);
   const { columns, filter } = await getRequestData(request, config);
 
-  const { error } = validateFilter(filter, config);
+  const { error } = validateParams(request.params, config);
   if (error) {
     return errorReply(new ValidationError(error), h);
   }
@@ -49,11 +49,6 @@ const findMany = async (request, h) => {
   const repo = manager.get(config.name);
   const { filter, sort, pagination, columns } = await getRequestData(request, config);
 
-  const { error } = validateFilter(filter, config);
-  if (error) {
-    return errorReply(error, h);
-  }
-
   try {
     // Get data
     const { rows } = await repo.find(filter, sort, pagination, columns);
@@ -75,8 +70,8 @@ const create = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const repo = manager.get(config.name);
   const { columns, data: payload } = await getRequestData(request, config);
-  const { error, value } = validateCreatePayload(payload, config);
 
+  const { error, value } = validateCreatePayload(payload, config);
   if (error) {
     return errorReply(new ValidationError(error), h);
   }
@@ -123,7 +118,7 @@ const updateOne = async (request, h) => {
   const repo = manager.get(config.name);
   const { columns, filter } = await getRequestData(request, config);
 
-  const { error } = validateFilter(filter, config);
+  const { error } = validateParams(request.params, config);
   if (error) {
     return errorReply(new ValidationError(error), h);
   }
@@ -175,9 +170,8 @@ const updateMany = async (request, h) => {
   const repo = manager.get(config.name);
   const { filter, columns } = await getRequestData(request, config);
 
-  const { error } = validateFilter(filter, config, true);
-  if (error) {
-    return errorReply(error, h);
+  if (isEmpty(filter)) {
+    return errorReply(new ValidationError('Filter is required'), h);
   }
 
   // Validate payload
@@ -214,7 +208,7 @@ const deleteOne = async (request, h) => {
   const repo = manager.get(config.name);
   const { filter } = await getRequestData(request, config);
 
-  const { error } = validateFilter(filter, config);
+  const { error } = validateParams(request.params, config);
   if (error) {
     return errorReply(error, h);
   }
@@ -245,11 +239,6 @@ const deleteMany = async (request, h) => {
   const repo = manager.get(config.name);
 
   const { filter } = await getRequestData(request, config);
-
-  const { error } = validateFilter(filter, config, true);
-  if (error) {
-    return errorReply(error, h);
-  }
 
   try {
     // Get data
