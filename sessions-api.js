@@ -4,6 +4,7 @@ const pool = require('./db');
 
 module.exports = new HAPIRestAPI({
   table: 'sessions',
+  name: 'CustomName',
   connection: pool,
   primaryKey: 'session_id',
   endpoint: '/api/1.0/sessions',
@@ -27,5 +28,6 @@ module.exports = new HAPIRestAPI({
     date_updated: Joi.string().allow(null),
     email: Joi.string().email().lowercase().trim()
   },
-  showSql: true
+  showSql: true,
+  maxPayloadBytes: 4096
 });
