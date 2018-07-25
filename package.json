@@ -28,7 +28,6 @@
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
     "mongo-sql": "^5.1.0",
-    "object-walk": "^0.1.1",
     "uuid": "^3.1.0"
   },
   "devDependencies": {

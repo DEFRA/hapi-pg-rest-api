@@ -1,6 +1,5 @@
-const objectWalk = require('object-walk');
 const Joi = require('joi');
-const { omit, isArray, mapValues, isEmpty } = require('lodash');
+const { omit, isArray } = require('lodash');
 const { ValidationError } = require('./errors');
 
 /**
