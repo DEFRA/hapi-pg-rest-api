@@ -81,6 +81,18 @@ lab.experiment('Test REST API', () => {
     Code.expect(Sessions.schemaDefinitionRoute).to.be.a.function();
     Code.expect(Sessions.deleteManyRoute).to.be.a.function();
   });
+
+  lab.test('The API should allow customising max payload size on create/update routes', async () => {
+    Code.expect(Sessions.routes.findManyRoute.config.payload).to.equal(undefined);
+    Code.expect(Sessions.routes.findOneRoute.config.payload).to.equal(undefined);
+    Code.expect(Sessions.routes.createRoute.config.payload.maxBytes).to.equal(4096);
+    Code.expect(Sessions.routes.updateOneRoute.config.payload.maxBytes).to.equal(4096);
+    Code.expect(Sessions.routes.replaceOneRoute.config.payload.maxBytes).to.equal(4096);
+    Code.expect(Sessions.routes.deleteOneRoute.config.payload).to.equal(undefined);
+    Code.expect(Sessions.routes.updateManyRoute.config.payload.maxBytes).to.equal(4096);
+    Code.expect(Sessions.routes.schemaDefinitionRoute.config.payload).to.equal(undefined);
+    Code.expect(Sessions.routes.deleteManyRoute.config.payload).to.equal(undefined);
+  });
 });
 
 exports.lab = lab;

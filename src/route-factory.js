@@ -5,7 +5,7 @@ const createRoute = (config, method, handler, isMany = false) => {
   const { endpoint, table } = config;
   const description = `${method} ${isMany ? 'many' : 'single'} ${table} ${isMany ? 'records' : 'record'}`;
   const path = (isMany || method === 'POST') ? endpoint : `${endpoint}/{id}`;
-  return {
+  const route = {
     method,
     path,
     handler,
@@ -16,6 +16,14 @@ const createRoute = (config, method, handler, isMany = false) => {
       }
     }
   };
+
+  if (config.maxPayloadBytes && ['POST', 'PUT', 'PATCH'].includes(method)) {
+    route.config.payload = {
+      maxBytes: config.maxPayloadBytes
+    };
+  }
+
+  return route;
 };
 
 const createSchemaRoute = (config) => {
