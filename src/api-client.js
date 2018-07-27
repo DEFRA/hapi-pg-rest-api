@@ -3,7 +3,7 @@
  * @module api-client
  * @class APIClient
  */
-const forEach = require('lodash/forEach');
+const { forEach, get } = require('lodash');
 
 class APIClient {
   /**
@@ -199,10 +199,25 @@ class APIClient {
     try {
       return await this.rp(options);
     } catch (error) {
-      // API error
-      if (error.error.error.name) {
-        return { data: null, error: error.error.error };
+      if (error.statusCode < 500) {
+        // Log short error
+        const uri = get(error, 'options.uri');
+        const method = get(error, 'options.method');
+        const message = get(error, 'message');
+        console.error(method, uri, message);
+
+        const errorName = get(error, 'error.error.name');
+        if (errorName) {
+          return {
+            data: null,
+            error: get(error, 'error.error')
+          };
+        }
+      } else {
+        // Log full error
+        console.error(error);
       }
+
       // Rethrow other error
       throw error;
     }
