@@ -24,7 +24,7 @@
   "author": "Department for Environment, Food & Rural Affairs",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "joi": "^13.1.2",
+    "joi": "^14.0.6",
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
     "mongo-sql": "^5.1.0",
