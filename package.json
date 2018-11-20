@@ -16,7 +16,10 @@
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
     "lint": "./node_modules/.bin/eslint ./src/**/*.js --fix",
-    "test": "./node_modules/lab/bin/lab -t 90 -m 0 --coverage-path ./src/ --ignore version -r lcov -o lcov.info -r console -o stdout"
+    "test": "lab",
+    "test:travis": "lab -t 90 -m 0 --coverage-path ./src/ --ignore version -r lcov -o coverage/lcov.info -r console -o stdout",
+    "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md",
+    "codecov": "codecov"
   },
   "engines": {
     "node": ">=8.0"
@@ -31,24 +34,25 @@
     "uuid": "^3.1.0"
   },
   "devDependencies": {
+    "auto-changelog": "^1.10.2",
     "blipp": "^3.0.0",
     "bluebird": "^3.5.1",
     "code": "^5.1.2",
-    "codecov": "^3.0.0",
+    "codecov": "^3.1.0",
     "db-migrate": "^0.10.2",
     "db-migrate-pg": "^0.2.5",
     "dotenv": "^4.0.0",
-    "hapi": "^17.2.2",
-    "lab": "^15.2.0",
-    "pg": "^7.4.1",
-    "request-promise-native": "^1.0.5",
-    "sinon": "^4.1.4",
     "eslint": "^4.17.0",
     "eslint-config-standard": "^11.0.0-beta.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^6.0.0",
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
+    "hapi": "^17.2.2",
+    "lab": "^15.2.0",
+    "pg": "^7.4.1",
+    "request-promise-native": "^1.0.5",
+    "sinon": "^4.1.4",
     "standard": "^10.0.3"
   }
 }
