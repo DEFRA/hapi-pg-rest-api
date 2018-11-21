@@ -41,7 +41,7 @@
     "codecov": "^3.1.0",
     "db-migrate": "^0.10.2",
     "db-migrate-pg": "^0.2.5",
-    "dotenv": "^4.0.0",
+    "dotenv": "^6.1.0",
     "eslint": "^4.17.0",
     "eslint-config-standard": "^11.0.0-beta.0",
     "eslint-plugin-import": "^2.8.0",
