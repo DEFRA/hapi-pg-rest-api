@@ -50,7 +50,7 @@
     "eslint-plugin-standard": "^3.0.1",
     "hapi": "^17.2.2",
     "lab": "^15.2.0",
-    "pg": "^7.4.1",
+    "pg": "^7.6.1",
     "request-promise-native": "^1.0.5",
     "sinon": "^4.1.4",
     "standard": "^10.0.3"
