@@ -1,5 +1,5 @@
 {
-  "name": "hapi-pg-rest-api",
+  "name": "@envage/hapi-pg-rest-api",
   "version": "4.1.0",
   "description": "RESTful API builder for Postgres DB table within a HAPI v17 application",
   "main": "index.js",
@@ -55,5 +55,8 @@
     "request-promise-native": "^1.0.5",
     "sinon": "^4.1.4",
     "standard": "^10.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
