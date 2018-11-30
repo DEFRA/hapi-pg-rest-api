@@ -1,6 +1,6 @@
 {
-  "name": "hapi-pg-rest-api",
-  "version": "4.0.1",
+  "name": "@envage/hapi-pg-rest-api",
+  "version": "4.1.0",
   "description": "RESTful API builder for Postgres DB table within a HAPI v17 application",
   "main": "index.js",
   "bugs": {
@@ -27,6 +27,7 @@
   "author": "Department for Environment, Food & Rural Affairs",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
+    "es6-error": "^4.1.1",
     "joi": "^13.1.2",
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
@@ -54,5 +55,8 @@
     "request-promise-native": "^1.0.5",
     "sinon": "^4.1.4",
     "standard": "^10.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

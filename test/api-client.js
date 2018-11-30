@@ -1,4 +1,5 @@
 const Lab = require('lab');
+const sinon = require('sinon');
 const sortBy = require('lodash/sortBy');
 const Code = require('code');
 const rp = require('request-promise-native').defaults({
@@ -200,6 +201,59 @@ lab.experiment('Test APIClient', () => {
     } catch (error) {
       Code.expect(error.name).to.equal('StatusCodeError');
     }
+  });
+});
+
+lab.experiment('Test findAll internal logic', () => {
+  let stub;
+
+  lab.before(async () => {
+    stub = sinon.stub(client, 'findMany').resolves({
+      error: null,
+      pagination: {
+        page: 1,
+        perPage: 3,
+        pageCount: 3,
+        totalRows: 9
+      },
+      data: [
+        {
+          id: 'a'
+        },
+        {
+          id: 'b'
+        },
+        {
+          id: 'c'
+        }
+      ]
+    });
+  });
+
+  lab.after(async () => {
+    stub.restore();
+  });
+
+  lab.test('It should load all pages of a result set', async () => {
+    const data = await client.findAll({});
+    Code.expect(data.length).to.equal(9);
+    const ids = data.map(row => row.id);
+    Code.expect(ids).to.equal(['a', 'b', 'c', 'a', 'b', 'c', 'a', 'b', 'c']);
+  });
+
+  lab.test('It should throw an error if API call returns error', async () => {
+    stub.resolves({
+      error: 'Some DB Error',
+      data: null
+    });
+    Code.expect(client.findAll({})).to.reject();
+  });
+});
+
+lab.experiment('Test findAll on API data', () => {
+  lab.test('It should load all pages of a result set', async () => {
+    const data = await client.findAll();
+    Code.expect(data).to.be.an.array();
   });
 });
 
