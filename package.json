@@ -27,6 +27,7 @@
   "author": "Department for Environment, Food & Rural Affairs",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
+    "es6-error": "^4.1.1",
     "joi": "^13.1.2",
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
