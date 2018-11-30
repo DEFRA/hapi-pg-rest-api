@@ -4,6 +4,7 @@
  * @class APIClient
  */
 const { forEach, get } = require('lodash');
+const { throwIfError } = require('./helpers');
 
 class APIClient {
   /**
@@ -110,6 +111,40 @@ class APIClient {
       qs,
       json: true
     });
+  }
+
+  /**
+   * Finds all pages of data for a particular filter request and returns as a
+   * flat array
+   *
+   * Throws an error if any request has error in the response
+   *
+   * @param {Object} [filter] - mongo-sql filter criteria
+   * @param {Object} [sort] - sort fields/direction
+   * @param {Array} [columns] - columns to return
+   * @return {Promise} resolves with flat array of data
+   */
+  async findAll (filter = {}, sort = {}, columns = []) {
+    // Find first page
+    const { error, pagination: { pageCount, perPage } } = await this.findMany(filter, sort, null, []);
+
+    throwIfError(error);
+
+    const rows = [];
+
+    for (let page = 1; page <= pageCount; page++) {
+      const pagination = {
+        page,
+        perPage
+      };
+      const { error, data } = await this.findMany(filter, sort, pagination, columns);
+
+      throwIfError(error);
+
+      rows.push(...data);
+    }
+
+    return rows;
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "name": "hapi-pg-rest-api",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "RESTful API builder for Postgres DB table within a HAPI v17 application",
   "main": "index.js",
   "bugs": {

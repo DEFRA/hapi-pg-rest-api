@@ -25,9 +25,16 @@ class NotFoundError extends ExtendableError {}
 
 class NotImplementedError extends ExtendableError {}
 
+class APIClientError extends ExtendableError {
+  constructor (error) {
+    super(`API error: ${JSON.stringify(error)}`);
+  }
+};
+
 module.exports = {
   ConfigError,
   ValidationError,
   NotFoundError,
-  NotImplementedError
+  NotImplementedError,
+  APIClientError
 };

@@ -1,3 +1,5 @@
+const { APIClientError } = require('./errors');
+
 /**
  * Get pagination info for paginated request
  * Includes total row count and number of pages
@@ -83,8 +85,19 @@ const errorReply = (error, h) => {
   return h.response({ error: { name: 'DBError', code }, data: null }).code(statusCode);
 };
 
+/**
+ * Accepts error response from hapi-pg-rest-api and throws if truthy
+ * @param  {Object|null} error [description]
+ */
+const throwIfError = (error) => {
+  if (error) {
+    throw new APIClientError(error);
+  }
+};
+
 module.exports = {
   getRequestData,
   getPaginationResponse,
-  errorReply
+  errorReply,
+  throwIfError
 };

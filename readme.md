@@ -130,7 +130,7 @@ server.route([
 * `primaryKeyGuid` : whether to use guids for primary key fields (default true)
 * `pagination` : default pagination, specified as {page : 1, perPage : 200}
 * `showSql` : for debugging, shows the generated SQL statements
-* `maxPayloadBytes` : when posting large payloads, set this to override the HAPI default 
+* `maxPayloadBytes` : when posting large payloads, set this to override the HAPI default
 
 
 ## Supported Endpoints
@@ -515,7 +515,8 @@ var {data, rowCount, error} = await client.updateOne('guid', data);
 await client.delete('guid');
 
 // Batch
-var {data, error} = await client.findMany(filter, sort, pagination);
+var {data, error} = await client.findMany(filter, sort, pagination, columns);
+var data = await client.findAll(filter, sort, pagination, columns); // Finds all pages in result set
 var {data, rowCount, error} = await client.updateMany(filter, data);
 
 // Schema
