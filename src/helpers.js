@@ -77,7 +77,7 @@ const isCodeEqual = (a, b) => {
  * @return {Boolean}       true if considered 400 error
  */
 const isBadRequest = (code) => {
-  return isCodeEqual(code, 23505) || isCodeEqual(23502);
+  return isCodeEqual(code, 23505) || isCodeEqual(code, 23502);
 };
 
 /**
@@ -119,5 +119,6 @@ module.exports = {
   getRequestData,
   getPaginationResponse,
   errorReply,
-  throwIfError
+  throwIfError,
+  isBadRequest
 };
