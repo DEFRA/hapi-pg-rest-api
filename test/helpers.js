@@ -2,7 +2,7 @@ const Lab = require('lab');
 const lab = Lab.script();
 const { expect } = require('code');
 
-const { throwIfError } = require('../src/helpers');
+const { throwIfError, isBadRequest } = require('../src/helpers');
 
 lab.experiment('Test throwIfError', () => {
   lab.test('It should return if error is null', async () => {
@@ -18,6 +18,36 @@ lab.experiment('Test throwIfError', () => {
       throwIfError(error);
     };
     expect(func).to.throw('API error: {"name":"ValidationError","message":"ValidationError: Some message"}');
+  });
+});
+
+lab.experiment('isBadRequest', () => {
+  lab.test('It should return true for unique_violation (numeric code)', async () => {
+    expect(isBadRequest(23505)).to.equal(true);
+  });
+
+  lab.test('It should return true for unique_violation (string code)', async () => {
+    expect(isBadRequest('23505')).to.equal(true);
+  });
+
+  lab.test('It should return true for not_null_violation violation (numeric code)', async () => {
+    expect(isBadRequest(23502)).to.equal(true);
+  });
+
+  lab.test('It should return true for not_null_violation violation (string code)', async () => {
+    expect(isBadRequest('23502')).to.equal(true);
+  });
+
+  lab.test('It should return false for other numeric code', async () => {
+    expect(isBadRequest(123)).to.equal(false);
+  });
+
+  lab.test('It should return false for other string code', async () => {
+    expect(isBadRequest('2200G')).to.equal(false);
+  });
+
+  lab.test('It should return false if no argument given', async () => {
+    expect(isBadRequest()).to.equal(false);
   });
 });
 

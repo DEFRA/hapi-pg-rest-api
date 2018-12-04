@@ -61,6 +61,35 @@ const formatError = (code, errorObj, h) => {
 };
 
 /**
+ * Converts error code as a string
+ * @param  {String|Number} code - error code
+ * @return {String}      error code as string
+ */
+const getStringCode = (code) => {
+  return (code || '').toString();
+};
+
+/**
+ * Checks if 2 postgres error codes are equal
+ * @param {Number|String} a - first code to test
+ * @param {Number|String} b - second code to test
+ * @return {Boolean} true if the same
+ */
+const isCodeEqual = (a, b) => {
+  return getStringCode(a) === getStringCode(b);
+};
+
+/**
+ * CHecks whether the supplied PG error code should be mapped to a
+ * 400 error
+ * @param  {String|Number}  code - PostGres error code
+ * @return {Boolean}       true if considered 400 error
+ */
+const isBadRequest = (code) => {
+  return isCodeEqual(code, 23505) || isCodeEqual(code, 23502);
+};
+
+/**
    * Return a HAPI error response
    * @param {Object} error - PostGres DB response error or internal error
    * @param {Object} h - HAPI HTTP reply interface
@@ -81,7 +110,7 @@ const errorReply = (error, h) => {
 
   // DB error
   const { code } = error;
-  const statusCode = [23505, 23502].includes(error.code) ? 400 : 500;
+  const statusCode = isBadRequest(code) ? 400 : 500;
   return h.response({ error: { name: 'DBError', code }, data: null }).code(statusCode);
 };
 
@@ -99,5 +128,6 @@ module.exports = {
   getRequestData,
   getPaginationResponse,
   errorReply,
-  throwIfError
+  throwIfError,
+  isBadRequest
 };
