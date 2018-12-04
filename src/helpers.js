@@ -61,13 +61,22 @@ const formatError = (code, errorObj, h) => {
 };
 
 /**
+ * Converts error code as a string
+ * @param  {String|Number} code - error code
+ * @return {String}      error code as string
+ */
+const getStringCode = (code) => {
+  return (code || '').toString();
+};
+
+/**
  * Checks if 2 postgres error codes are equal
  * @param {Number|String} a - first code to test
  * @param {Number|String} b - second code to test
  * @return {Boolean} true if the same
  */
 const isCodeEqual = (a, b) => {
-  return (a || '').toString() === (b || '').toString();
+  return getStringCode(a) === getStringCode(b);
 };
 
 /**
