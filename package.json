@@ -1,6 +1,6 @@
 {
   "name": "@envage/hapi-pg-rest-api",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "RESTful API builder for Postgres DB table within a HAPI v17 application",
   "main": "index.js",
   "bugs": {
@@ -29,7 +29,7 @@
   "dependencies": {
     "es6-error": "^4.1.1",
     "joi": "^13.1.2",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.11",
     "moment": "^2.20.1",
     "mongo-sql": "^5.1.0",
     "uuid": "^3.1.0"
