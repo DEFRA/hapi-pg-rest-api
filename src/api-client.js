@@ -18,6 +18,7 @@ class APIClient {
       headers: {}
     };
     this.config = Object.assign({}, defaults, config);
+    this.logger = config.logger || console;
     this.rp = rp;
     this.urlParams = {};
   }
@@ -239,7 +240,7 @@ class APIClient {
         const uri = get(error, 'options.uri');
         const method = get(error, 'options.method');
         const message = get(error, 'message');
-        console.error(method, uri, message);
+        this.logger.error(method, uri, message);
 
         const errorName = get(error, 'error.error.name');
         if (errorName) {
@@ -250,7 +251,7 @@ class APIClient {
         }
       } else {
         // Log full error
-        console.error(error);
+        this.logger.error(error);
       }
 
       // Rethrow other error
