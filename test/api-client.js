@@ -190,21 +190,6 @@ experiment('Test APIClient', () => {
     });
     expect(error.name).to.equal('ValidationError');
   });
-
-  // Test error handling
-  test('The client should throw status errors', async () => {
-    try {
-      const client2 = new APIClient(rp, {
-        endpoint: 'http://localhost:8000/api/1.0/session'
-      });
-      await client2.create({
-        non_existent_field: 'Invalid'
-      });
-    } catch (error) {
-      expect(client.logger.error.called).to.be.true();
-      expect(error.name).to.equal('StatusCodeError');
-    }
-  });
 });
 
 experiment('Test findAll internal logic', () => {

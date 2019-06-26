@@ -236,12 +236,6 @@ class APIClient {
       return await this.rp(options);
     } catch (error) {
       if (error.statusCode < 500) {
-        // Log short error
-        const uri = get(error, 'options.uri');
-        const method = get(error, 'options.method');
-        const message = get(error, 'message');
-        this.logger.error(method, uri, message);
-
         const errorName = get(error, 'error.error.name');
         if (errorName) {
           return {
@@ -251,7 +245,7 @@ class APIClient {
         }
       } else {
         // Log full error
-        this.logger.error(error);
+        this.logger.error('hapi rest api error', error);
       }
 
       // Rethrow other error
