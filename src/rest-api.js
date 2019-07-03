@@ -27,7 +27,7 @@ class HAPIRestAPI {
       primaryKeyGuid: true,
       pagination: {
         page: 1,
-        perPage: 100
+        perPage: Number.MAX_SAFE_INTEGER
       }
     }, config);
 
