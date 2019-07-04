@@ -19,7 +19,9 @@
     "test": "lab",
     "test:travis": "lab -t 90 -m 0 --coverage-path ./src/ --ignore version -r lcov -o coverage/lcov.info -r console -o stdout",
     "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md",
-    "codecov": "codecov"
+    "codecov": "codecov",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "engines": {
     "node": ">=8.0"
@@ -32,7 +34,8 @@
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "mongo-sql": "^5.1.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "snyk": "^1.190.0"
   },
   "devDependencies": {
     "auto-changelog": "^1.13.0",
@@ -58,5 +61,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "snyk": true
 }
