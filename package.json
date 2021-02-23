@@ -29,7 +29,7 @@
   "dependencies": {
     "es6-error": "^4.1.1",
     "joi": "^13.1.2",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "mongo-sql": "^6.2.0",
     "uuid": "^3.3.2"
