@@ -1,6 +1,6 @@
 {
   "name": "@envage/hapi-pg-rest-api",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "RESTful API builder for Postgres DB table within a HAPI v17 application",
   "main": "index.js",
   "bugs": {
