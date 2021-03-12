@@ -1,14 +1,12 @@
 {
   "name": "@envage/hapi-pg-rest-api",
-  "version": "6.0.0",
-  "description": "RESTful API builder for Postgres DB table within a HAPI v17 application",
+  "version": "7.0.0",
+  "description": "RESTful API builder for Postgres DB table within a HAPI v20 application",
   "main": "index.js",
   "bugs": {
     "url": "https://github.com/DEFRA/hapi-pg-rest-api/issues"
   },
-  "homepage": {
-    "url": "https://github.com/DEFRA/hapi-pg-rest-api#readme"
-  },
+  "homepage": "https://github.com/DEFRA/hapi-pg-rest-api#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/DEFRA/hapi-pg-rest-api.git"
@@ -17,6 +15,7 @@
     "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
     "lint": "./node_modules/.bin/eslint ./src/**/*.js --fix",
     "test": "lab",
+    "test:bail": "lab --bail",
     "test:travis": "lab -t 90 -m 0 --coverage-path ./src/ --ignore version -r lcov -o coverage/lcov.info -r console -o stdout",
     "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md",
     "codecov": "codecov"
@@ -28,19 +27,20 @@
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "es6-error": "^4.1.1",
-    "joi": "^13.1.2",
-    "lodash": "^4.17.11",
-    "moment": "^2.24.0",
+    "joi": "^17.3.0",
+    "lodash": "^4.17.20",
+    "moment": "^2.29.1",
     "mongo-sql": "^6.2.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
+    "@hapi/hapi": "^20.1.0",
     "auto-changelog": "^1.13.0",
     "blipp": "^3.0.0",
     "bluebird": "^3.5.5",
     "code": "^5.1.2",
     "codecov": "^3.5.0",
-    "db-migrate": "^0.11.6",
+    "db-migrate": "^0.11.11",
     "db-migrate-pg": "^0.2.5",
     "dotenv": "^8.0.0",
     "eslint": "^5.16.0",

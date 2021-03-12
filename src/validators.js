@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { omit, isArray } = require('lodash');
+const { isArray } = require('lodash');
 const { ValidationError } = require('./errors');
 
 /**
@@ -28,15 +28,21 @@ const checkIdenticalKeys = (data) => {
  * @return {Object}
  */
 const validateCreatePayload = (payload, config) => {
-  const rowSchema = (config.primaryKeyAuto || config.primaryKeyGuid) ? omit(config.validation, config.primaryKey) : config.validation;
-
-  const finalSchema = isArray(payload) ? Joi.array().items(rowSchema) : rowSchema;
-
-  if (isArray(payload) && !checkIdenticalKeys) {
-    return {value: undefined, error: new ValidationError('All objects must have same keys in multi-row insert')};
+  // For multi-row insert, all items in payload must have identical keys
+  if (isArray(payload) && !checkIdenticalKeys(payload)) {
+    return { value: undefined, error: new ValidationError('All objects must have same keys in multi-row insert') };
   }
 
-  return Joi.validate(payload, finalSchema);
+  // Forbid primary key in payload if auto-generated
+  const rowSchema = (config.primaryKeyAuto || config.primaryKeyGuid)
+    ? config.validation.keys({ [config.primaryKey]: Joi.forbidden() })
+    : config.validation;
+
+  // Create single/multi-item schema
+  const finalSchema = isArray(payload) ? Joi.array().items(rowSchema) : rowSchema;
+
+  // Validate payload
+  return finalSchema.validate(payload);
 };
 
 /**
@@ -47,8 +53,12 @@ const validateCreatePayload = (payload, config) => {
  * @return {Object}
  */
 const validateUpdatePayload = (payload, config) => {
-  const schema = omit(config.validation, config.primaryKey);
-  return Joi.validate(payload, schema);
+  // Disallow primary key in payload
+  const schema = config.validation.keys({
+    [config.primaryKey]: Joi.forbidden()
+  });
+
+  return schema.validate(payload);
 };
 
 /**
@@ -61,7 +71,7 @@ const validateParams = (params, config) => {
   const data = {
     [config.primaryKey]: params.id
   };
-  return Joi.validate(data, config.validation);
+  return config.validation.validate(data);
 };
 
 module.exports = {

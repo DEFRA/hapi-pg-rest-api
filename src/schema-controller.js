@@ -1,20 +1,24 @@
-const { mapValues } = require('lodash');
+'use strict';
+
+const { mapValues, get } = require('lodash');
 
 const getSchema = async (request, h) => {
   const config = request.route.settings.plugins.hapiPgRestAPI;
   const { table, primaryKey, primaryKeyAuto, primaryKeyGuid } = config;
   const required = [];
-  const properties = mapValues(config.validation, (value, key) => {
+
+  const properties = mapValues(config.validation.describe().keys, (value, key) => {
     // Required fields
-    if (value._flags.presence === 'required') {
+    if (get(value, 'flags.presence') === 'required') {
       required.push(key);
     }
+
     const field = {
-      type: value._type
+      type: value.type
     };
 
     // Joi Tests
-    value._tests.forEach((test) => {
+    (value.rules || []).forEach((test) => {
       if (test.name === 'min') {
         field.minLength = test.arg;
       }
@@ -52,6 +56,4 @@ const getSchema = async (request, h) => {
   });
 };
 
-module.exports = {
-  getSchema
-};
+exports.getSchema = getSchema;
