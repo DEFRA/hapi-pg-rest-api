@@ -1,5 +1,3 @@
-
-
 const Lab = require('lab');
 
 const lab = Lab.script();
@@ -15,8 +13,8 @@ lab.experiment('Test POST entity creation with numeric non-auto-increment primar
       url: '/api/1.0/numericpk',
       payload: {
         id,
-        name: 'Test',
-      },
+        name: 'Test'
+      }
     };
 
     const res = await server.inject(request);

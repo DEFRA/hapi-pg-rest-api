@@ -6,7 +6,7 @@
 
 # HAPI REST API
 
-A module to create a simple REST API in a HAPI 17 application connected to a particular Postgres DB table.
+A module to create a simple REST API in a HAPI 20 application connected to a particular Postgres DB table.
 
 ## Contributing to this project
 

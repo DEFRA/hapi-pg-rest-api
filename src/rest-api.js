@@ -3,6 +3,7 @@
  * to reduce boilerplate code
  * @module rest-api
  */
+const Joi = require('joi');
 const { ConfigError } = require('./errors');
 const routeFactory = require('./route-factory');
 const manager = require('./manager');
@@ -13,6 +14,8 @@ class HAPIRestAPI {
     if (!config.validation) {
       throw new ConfigError('Validation missing from API config');
     }
+
+    const validation = Joi.object(config.validation);
 
     // Create config object with defaults
     this.config = Object.assign({
@@ -29,7 +32,7 @@ class HAPIRestAPI {
         page: 1,
         perPage: Number.MAX_SAFE_INTEGER
       }
-    }, config);
+    }, config, { validation });
 
     manager.create(this.config);
 
