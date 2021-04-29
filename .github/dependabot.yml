@@ -1,0 +1,36 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  versioning-strategy: lockfile-only
+  ignore:
+  - dependency-name: ini
+    versions:
+    - 1.3.8
+  - dependency-name: acorn
+    versions:
+    - 6.4.2
+  - dependency-name: lodash
+    versions:
+    - 4.17.20
+  - dependency-name: uuid
+    versions:
+    - 3.4.0
+  - dependency-name: node-fetch
+    versions:
+    - 2.6.1
+  - dependency-name: handlebars
+    versions:
+    - 4.7.6
+  - dependency-name: https-proxy-agent
+    versions:
+    - 2.2.4
+  - dependency-name: eslint-utils
+    versions:
+    - 1.4.3
+  - dependency-name: eslint-plugin-promise
+    versions:
+    - 4.2.1
