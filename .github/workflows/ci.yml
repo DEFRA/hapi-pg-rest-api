@@ -6,10 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgres://water_user:password@localhost:5432/wabs
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/wabs
       # These need to be duplicated in services section for postgres. Unfortunately, there is not a way to reuse them
-      PGUSER: water_user
-      PGPASSWORD: password
+      PGUSER: postgres
+      PGPASSWORD: postgres
       PGDATABASE: wabs
       PGHOST: localhost
       PGPORT: 5432
@@ -22,8 +22,8 @@ jobs:
         image: postgres:12-alpine
         # Provide the password for postgres
         env:
-          POSTGRES_USER: water_user
-          POSTGRES_PASSWORD: password
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: wabs
         # Maps tcp port 5432 on service container to the host
         ports:
