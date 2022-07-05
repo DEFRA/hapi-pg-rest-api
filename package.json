@@ -16,7 +16,6 @@
     "lint": "./node_modules/.bin/eslint ./src/**/*.js --fix",
     "test": "lab",
     "test:bail": "lab --bail",
-    "test:travis": "lab -t 90 -m 0 --coverage-path ./src/ --ignore version -r lcov -o coverage/lcov.info -r console -o stdout",
     "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md",
     "codecov": "codecov"
   },
