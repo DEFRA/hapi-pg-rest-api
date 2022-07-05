@@ -78,9 +78,9 @@ jobs:
         run: npm ci
 
       # Run linting first. No point running the tests if there is a linting issue
-      - name: Run lint check
-        run: |
-          npm run lint
+      # - name: Run lint check
+      #   run: |
+      #     npm run lint
 
       - name: Database migrations
         run: |
