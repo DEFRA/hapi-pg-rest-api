@@ -2,7 +2,7 @@
  * HAPI server used for testing
  */
 require('dotenv').config();
-const Hapi = require('hapi');
+const Hapi = require('@hapi/hapi');
 const Blipp = require('blipp');
 const SessionsApi = require('./sessions-api.js');
 const SessionsApiContext = require('./sessions-api-context.js');
