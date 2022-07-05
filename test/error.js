@@ -1,9 +1,9 @@
 
 
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 
 const lab = Lab.script();
-const Code = require('code');
+const Code = require('@hapi/code');
 const { ConfigError, ValidationError, NotFoundError } = require('../src/errors.js');
 
 lab.experiment('Test error classes', () => {

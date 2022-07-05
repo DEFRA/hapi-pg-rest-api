@@ -1,11 +1,11 @@
 
 
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 
 const lab = Lab.script();
 const sortBy = require('lodash/sortBy');
 
-const Code = require('code');
+const Code = require('@hapi/code');
 const server = require('../server.js');
 
 const uuidV4 = require('uuid/v4');

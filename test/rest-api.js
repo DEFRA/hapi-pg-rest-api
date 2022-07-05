@@ -1,11 +1,11 @@
 // 'use strict'
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 
 const lab = Lab.script();
 const sinon = require('sinon');
 const Db = require('../db.js');
 const server = require('../server.js');
-const Code = require('code');
+const Code = require('@hapi/code');
 const RestApi = require('../src/rest-api.js');
 const Sessions = require('../sessions-api.js');
 

@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const sortBy = require('lodash/sortBy');
-const { expect } = require('code');
+const { expect } = require('@hapi/code');
 const rp = require('request-promise-native').defaults({
   proxy: null,
   strictSSL: false
