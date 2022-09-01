@@ -1,29 +1,23 @@
 
+const Lab = require('@hapi/lab')
 
-const Lab = require('lab');
+const lab = Lab.script()
 
-const lab = Lab.script();
-const sortBy = require('lodash/sortBy');
-
-const Code = require('code');
-const server = require('../server.js');
-
-const uuidV4 = require('uuid/v4');
-
-const sessionId = null;
+const Code = require('@hapi/code')
+const server = require('../server.js')
 
 lab.experiment('Test GET schema', () => {
   lab.test('The API should get a schema for an endpoint', async () => {
     const request = {
       method: 'GET',
-      url: '/api/1.0/sessions/schema',
-    };
+      url: '/api/1.0/sessions/schema'
+    }
 
-    const res = await server.inject(request);
-    Code.expect(res.statusCode).to.equal(200);
+    const res = await server.inject(request)
+    Code.expect(res.statusCode).to.equal(200)
 
     // Check payload
-    const payload = JSON.parse(res.payload);
+    const payload = JSON.parse(res.payload)
 
     const expected = JSON.parse(`{
     "error": null,
@@ -61,10 +55,10 @@ lab.experiment('Test GET schema', () => {
             "primaryKeyGuid": true
         }
     }
-}`);
+}`)
 
-    Code.expect(payload).to.equal(expected);
-  });
-});
+    Code.expect(payload).to.equal(expected)
+  })
+})
 
-exports.lab = lab;
+exports.lab = lab

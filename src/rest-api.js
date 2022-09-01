@@ -3,19 +3,19 @@
  * to reduce boilerplate code
  * @module rest-api
  */
-const Joi = require('joi');
-const { ConfigError } = require('./errors');
-const routeFactory = require('./route-factory');
-const manager = require('./manager');
+const Joi = require('joi')
+const { ConfigError } = require('./errors')
+const routeFactory = require('./route-factory')
+const manager = require('./manager')
 
 class HAPIRestAPI {
   constructor (config) {
     // Require validation
     if (!config.validation) {
-      throw new ConfigError('Validation missing from API config');
+      throw new ConfigError('Validation missing from API config')
     }
 
-    const validation = Joi.object(config.validation);
+    const validation = Joi.object(config.validation)
 
     // Create config object with defaults
     this.config = Object.assign({
@@ -32,17 +32,17 @@ class HAPIRestAPI {
         page: 1,
         perPage: Number.MAX_SAFE_INTEGER
       }
-    }, config, { validation });
+    }, config, { validation })
 
-    manager.create(this.config);
+    manager.create(this.config)
 
-    this.repo = manager.create(this.config);
+    this.repo = manager.create(this.config)
 
-    this.routes = routeFactory(this.config);
+    this.routes = routeFactory(this.config)
 
     // Add routes as methods to this instance for backwards compatability
-    for (let routeName in this.routes) {
-      this[routeName] = () => this.routes[routeName];
+    for (const routeName in this.routes) {
+      this[routeName] = () => this.routes[routeName]
     }
   }
 
@@ -51,8 +51,8 @@ class HAPIRestAPI {
    * @return {Array}
    */
   getRoutes () {
-    return Object.values(this.routes);
+    return Object.values(this.routes)
   }
 }
 
-module.exports = HAPIRestAPI;
+module.exports = HAPIRestAPI

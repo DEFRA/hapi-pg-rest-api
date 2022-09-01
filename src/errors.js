@@ -2,7 +2,7 @@
  * Error classes
  * @module errors
  */
-const ExtendableError = require('es6-error');
+const ExtendableError = require('es6-error')
 
 /**
  * An error class for when API class has been instantiated with incorrect
@@ -27,7 +27,7 @@ class NotImplementedError extends ExtendableError {}
 
 class APIClientError extends ExtendableError {
   constructor (error) {
-    super(`API error: ${JSON.stringify(error)}`);
+    super(`API error: ${JSON.stringify(error)}`)
   }
 };
 
@@ -37,4 +37,4 @@ module.exports = {
   NotFoundError,
   NotImplementedError,
   APIClientError
-};
+}

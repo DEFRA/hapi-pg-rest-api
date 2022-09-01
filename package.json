@@ -13,10 +13,9 @@
   },
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
-    "lint": "./node_modules/.bin/eslint ./src/**/*.js --fix",
+    "lint": "standard",
     "test": "lab",
     "test:bail": "lab --bail",
-    "test:travis": "lab -t 90 -m 0 --coverage-path ./src/ --ignore version -r lcov -o coverage/lcov.info -r console -o stdout",
     "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md",
     "codecov": "codecov"
   },
@@ -34,27 +33,20 @@
     "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "@hapi/hapi": "^20.1.0",
+    "@hapi/code": "^9.0.1",
+    "@hapi/hapi": "^20.2.1",
+    "@hapi/lab": "^25.0.1",
     "auto-changelog": "^1.13.0",
     "blipp": "^3.0.0",
     "bluebird": "^3.5.5",
-    "code": "^5.1.2",
-    "codecov": "^3.5.0",
     "db-migrate": "^0.11.11",
-    "db-migrate-pg": "^0.2.5",
+    "db-migrate-pg": "^1.2.2",
     "dotenv": "^8.0.0",
-    "eslint": "^5.16.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.17.3",
-    "eslint-plugin-node": "^9.1.0",
-    "eslint-plugin-promise": "^4.1.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "hapi": "^17.2.2",
-    "lab": "^18.0.2",
-    "pg": "^7.11.0",
+    "pg": "^8.7.3",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
-    "sinon": "^7.3.2"
+    "sinon": "^7.3.2",
+    "standard": "^17.0.0"
   },
   "publishConfig": {
     "access": "public"

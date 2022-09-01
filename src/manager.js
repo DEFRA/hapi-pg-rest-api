@@ -1,11 +1,11 @@
 /**
  * Repository manager - to centrally manage repository instances
  */
-const Repository = require('./repository.js');
+const Repository = require('./repository.js')
 
 class RepositoryManager {
   constructor () {
-    this.repository = {};
+    this.repository = {}
   }
 
   /**
@@ -14,10 +14,10 @@ class RepositoryManager {
      * @return {Object} created repository
      */
   create (config) {
-    const { name } = config;
+    const { name } = config
     // Create repo
-    this.repository[name] = new Repository(config);
-    return this.repository[name];
+    this.repository[name] = new Repository(config)
+    return this.repository[name]
   }
 
   /**
@@ -26,9 +26,9 @@ class RepositoryManager {
    * @return {Object} repository instance
    */
   get (name) {
-    return this.repository[name];
+    return this.repository[name]
   }
 }
 
-const manager = new RepositoryManager();
-module.exports = manager;
+const manager = new RepositoryManager()
+module.exports = manager

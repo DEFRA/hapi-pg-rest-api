@@ -3,8 +3,8 @@
  * @module api-client
  * @class APIClient
  */
-const { forEach, get } = require('lodash');
-const { throwIfError } = require('./helpers');
+const { forEach, get } = require('lodash')
+const { throwIfError } = require('./helpers')
 
 class APIClient {
   /**
@@ -16,11 +16,11 @@ class APIClient {
   constructor (rp, config = {}) {
     const defaults = {
       headers: {}
-    };
-    this.config = Object.assign({}, defaults, config);
-    this.logger = config.logger || console;
-    this.rp = rp;
-    this.urlParams = {};
+    }
+    this.config = Object.assign({}, defaults, config)
+    this.logger = config.logger || console
+    this.rp = rp
+    this.urlParams = {}
   }
 
   /**
@@ -28,8 +28,8 @@ class APIClient {
    * @param {Object} URL context params
    */
   setParams (urlParams = {}) {
-    this.urlParams = urlParams;
-    return this;
+    this.urlParams = urlParams
+    return this
   }
 
   /**
@@ -38,12 +38,12 @@ class APIClient {
    * @return {String} URL
    */
   getUrl (id) {
-    let url = id ? `${this.config.endpoint}/${id}` : this.config.endpoint;
+    let url = id ? `${this.config.endpoint}/${id}` : this.config.endpoint
     // Replace context params in URL
     forEach(this.urlParams, (val, key) => {
-      url = url.replace(`{${key}}`, val);
-    });
-    return url;
+      url = url.replace(`{${key}}`, val)
+    })
+    return url
   }
 
   /**
@@ -53,9 +53,11 @@ class APIClient {
    * @return {Promise} - resolves with new row data on success
    */
   async create (body, columns = null) {
-    const qs = columns ? {
-      columns: columns.join(',')
-    } : null;
+    const qs = columns
+      ? {
+          columns: columns.join(',')
+        }
+      : null
     return this.makeRequest({
       uri: this.getUrl(),
       method: 'POST',
@@ -63,7 +65,7 @@ class APIClient {
       headers: this.config.headers,
       json: true,
       qs
-    });
+    })
   }
 
   /**
@@ -73,9 +75,11 @@ class APIClient {
    * @return {Promise} resolves with single record if found
    */
   async findOne (id, columns = null) {
-    const qs = columns ? {
-      columns: columns.join(',')
-    } : null;
+    const qs = columns
+      ? {
+          columns: columns.join(',')
+        }
+      : null
 
     return this.makeRequest({
       uri: this.getUrl(id),
@@ -83,7 +87,7 @@ class APIClient {
       headers: this.config.headers,
       json: true,
       qs
-    });
+    })
   }
 
   /**
@@ -97,12 +101,12 @@ class APIClient {
     const qs = {
       filter: JSON.stringify(filter),
       sort: JSON.stringify(sort)
-    };
+    }
     if (pagination) {
-      qs.pagination = JSON.stringify(pagination);
+      qs.pagination = JSON.stringify(pagination)
     }
     if (columns) {
-      qs.columns = columns.join(',');
+      qs.columns = columns.join(',')
     }
 
     return this.makeRequest({
@@ -111,7 +115,7 @@ class APIClient {
       headers: this.config.headers,
       qs,
       json: true
-    });
+    })
   }
 
   /**
@@ -127,25 +131,25 @@ class APIClient {
    */
   async findAll (filter = {}, sort = {}, columns = []) {
     // Find first page
-    const { error, pagination: { pageCount, perPage } } = await this.findMany(filter, sort, null, []);
+    const { error, pagination: { pageCount, perPage } } = await this.findMany(filter, sort, null, [])
 
-    throwIfError(error);
+    throwIfError(error)
 
-    const rows = [];
+    const rows = []
 
     for (let page = 1; page <= pageCount; page++) {
       const pagination = {
         page,
         perPage
-      };
-      const { error, data } = await this.findMany(filter, sort, pagination, columns);
+      }
+      const { error: pageError, data } = await this.findMany(filter, sort, pagination, columns)
 
-      throwIfError(error);
+      throwIfError(pageError)
 
-      rows.push(...data);
+      rows.push(...data)
     }
 
-    return rows;
+    return rows
   }
 
   /**
@@ -156,9 +160,11 @@ class APIClient {
    * @return {Promise} - resolves with API response
    */
   async updateOne (id, body, columns = null) {
-    const qs = columns ? {
-      columns: columns.join(',')
-    } : null;
+    const qs = columns
+      ? {
+          columns: columns.join(',')
+        }
+      : null
     return this.makeRequest({
       uri: this.getUrl(id),
       method: 'PATCH',
@@ -166,7 +172,7 @@ class APIClient {
       body,
       json: true,
       qs
-    });
+    })
   }
 
   /**
@@ -183,7 +189,7 @@ class APIClient {
       body,
       qs: { filter: JSON.stringify(filter) },
       json: true
-    });
+    })
   }
 
   /**
@@ -192,7 +198,7 @@ class APIClient {
    * @return {Promise} - resolves when deleted
    */
   async delete (id) {
-    let options;
+    let options
 
     if (typeof (id) === 'string') {
       options = {
@@ -200,7 +206,7 @@ class APIClient {
         method: 'DELETE',
         headers: this.config.headers,
         json: true
-      };
+      }
     } else {
       options = {
         uri: this.getUrl(),
@@ -208,10 +214,10 @@ class APIClient {
         headers: this.config.headers,
         json: true,
         qs: { filter: JSON.stringify(id) }
-      };
+      }
     }
 
-    return this.makeRequest(options);
+    return this.makeRequest(options)
   }
 
   /**
@@ -224,7 +230,7 @@ class APIClient {
       method: 'GET',
       headers: this.config.headers,
       json: true
-    });
+    })
   }
 
   /**
@@ -233,25 +239,25 @@ class APIClient {
    */
   async makeRequest (options) {
     try {
-      return await this.rp(options);
+      return await this.rp(options)
     } catch (error) {
       if (error.statusCode < 500) {
-        const errorName = get(error, 'error.error.name');
+        const errorName = get(error, 'error.error.name')
         if (errorName) {
           return {
             data: null,
             error: get(error, 'error.error')
-          };
+          }
         }
       } else {
         // Log full error
-        this.logger.error('hapi rest api error', error);
+        this.logger.error('hapi rest api error', error)
       }
 
       // Rethrow other error
-      throw error;
+      throw error
     }
   }
 }
 
-module.exports = APIClient;
+module.exports = APIClient
