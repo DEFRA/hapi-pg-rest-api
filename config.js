@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config()
 
 module.exports = {
 
@@ -9,4 +9,4 @@ module.exports = {
     connectionTimeoutMillis: 2000
   }
 
-};
+}

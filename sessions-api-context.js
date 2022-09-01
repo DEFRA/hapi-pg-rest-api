@@ -1,6 +1,6 @@
-const Joi = require('joi');
-const HAPIRestAPI = require('./src/rest-api');
-const pool = require('./db');
+const Joi = require('joi')
+const HAPIRestAPI = require('./src/rest-api')
+const pool = require('./db')
 
 module.exports = new HAPIRestAPI({
   table: 'sessions',
@@ -10,9 +10,9 @@ module.exports = new HAPIRestAPI({
   onCreateTimestamp: 'date_created',
   onUpdateTimestamp: 'date_updated',
   preQuery: (result, hapiRequest) => {
-    result.filter.ip = hapiRequest.params.ip;
-    result.data.ip = hapiRequest.params.ip;
-    return result;
+    result.filter.ip = hapiRequest.params.ip
+    result.data.ip = hapiRequest.params.ip
+    return result
   },
   upsert: {
     fields: ['session_id'],
@@ -25,4 +25,4 @@ module.exports = new HAPIRestAPI({
     date_created: Joi.string(),
     date_updated: Joi.string().allow(null)
   }
-});
+})

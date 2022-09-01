@@ -1,9 +1,9 @@
 
-const Lab = require('@hapi/lab');
+const Lab = require('@hapi/lab')
 
-const lab = Lab.script();
-const Code = require('@hapi/code');
-const server = require('../server.js');
+const lab = Lab.script()
+const Code = require('@hapi/code')
+const server = require('../server.js')
 
 lab.experiment('Test POST entity creation', () => {
   lab.test('The API should create a new valid record with POST', async () => {
@@ -15,17 +15,17 @@ lab.experiment('Test POST entity creation', () => {
         session_data: JSON.stringify({ username: 'bob' }),
         email: 'mail@example.com'
       }
-    };
+    }
 
-    const res = await server.inject(request);
-    Code.expect(res.statusCode).to.equal(201);
+    const res = await server.inject(request)
+    Code.expect(res.statusCode).to.equal(201)
 
     // Check payload
-    const payload = JSON.parse(res.payload);
+    const payload = JSON.parse(res.payload)
 
-    Code.expect(payload.error).to.equal(null);
-    Code.expect(payload.data.session_id).to.be.a.string();
-  });
+    Code.expect(payload.error).to.equal(null)
+    Code.expect(payload.data.session_id).to.be.a.string()
+  })
 
   lab.test('The API should support Joi transformation of values such as lowercase, trim', async () => {
     const request = {
@@ -36,17 +36,17 @@ lab.experiment('Test POST entity creation', () => {
         session_data: JSON.stringify({ username: 'bob' }),
         email: '  MAIL@EXAMPLE.COM '
       }
-    };
+    }
 
-    const res = await server.inject(request);
-    Code.expect(res.statusCode).to.equal(201);
+    const res = await server.inject(request)
+    Code.expect(res.statusCode).to.equal(201)
 
     // Check payload
-    const payload = JSON.parse(res.payload);
+    const payload = JSON.parse(res.payload)
 
-    Code.expect(payload.error).to.equal(null);
-    Code.expect(payload.data.email).to.equal('mail@example.com');
-  });
+    Code.expect(payload.error).to.equal(null)
+    Code.expect(payload.data.email).to.equal('mail@example.com')
+  })
 
   lab.test('The API should create multiple valid records with POST', async () => {
     const request = {
@@ -62,20 +62,20 @@ lab.experiment('Test POST entity creation', () => {
         session_data: JSON.stringify({ username: 'jim' }),
         email: 'jim@example.com'
       }]
-    };
+    }
 
-    const res = await server.inject(request);
-    Code.expect(res.statusCode).to.equal(201);
+    const res = await server.inject(request)
+    Code.expect(res.statusCode).to.equal(201)
 
     // Check payload
-    const payload = JSON.parse(res.payload);
+    const payload = JSON.parse(res.payload)
 
-    Code.expect(payload.error).to.equal(null);
-    Code.expect(payload.data[0].session_id).to.be.a.string();
-    Code.expect(payload.data[0].ip).to.equal('127.0.0.1');
-    Code.expect(payload.data[1].session_id).to.be.a.string();
-    Code.expect(payload.data[1].ip).to.equal('255.0.0.0');
-  });
+    Code.expect(payload.error).to.equal(null)
+    Code.expect(payload.data[0].session_id).to.be.a.string()
+    Code.expect(payload.data[0].ip).to.equal('127.0.0.1')
+    Code.expect(payload.data[1].session_id).to.be.a.string()
+    Code.expect(payload.data[1].ip).to.equal('255.0.0.0')
+  })
 
   lab.test('The API should reject invalid data during POST', async () => {
     const request = {
@@ -85,15 +85,15 @@ lab.experiment('Test POST entity creation', () => {
         ip: 123,
         session_data: JSON.stringify({ username: 'bob' })
       }
-    };
+    }
 
-    const res = await server.inject(request);
-    Code.expect(res.statusCode).to.equal(400);
+    const res = await server.inject(request)
+    Code.expect(res.statusCode).to.equal(400)
 
     // Check payload
-    const payload = JSON.parse(res.payload);
-    Code.expect(payload.error.name).to.equal('ValidationError');
-  });
+    const payload = JSON.parse(res.payload)
+    Code.expect(payload.error.name).to.equal('ValidationError')
+  })
 
   lab.test('The API should reject a POST with primary key field defined', async () => {
     const request = {
@@ -104,15 +104,15 @@ lab.experiment('Test POST entity creation', () => {
         session_data: JSON.stringify({ username: 'bob' }),
         ip: '10.0.2.2'
       }
-    };
+    }
 
-    const res = await server.inject(request);
-    Code.expect(res.statusCode).to.equal(400);
+    const res = await server.inject(request)
+    Code.expect(res.statusCode).to.equal(400)
 
     // Check payload
-    const payload = JSON.parse(res.payload);
-    Code.expect(payload.error.name).to.equal('ValidationError');
-  });
-});
+    const payload = JSON.parse(res.payload)
+    Code.expect(payload.error.name).to.equal('ValidationError')
+  })
+})
 
-exports.lab = lab;
+exports.lab = lab

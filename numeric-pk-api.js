@@ -1,6 +1,6 @@
-const Joi = require('joi');
-const HAPIRestAPI = require('./src/rest-api');
-const pool = require('./db');
+const Joi = require('joi')
+const HAPIRestAPI = require('./src/rest-api')
+const pool = require('./db')
 
 module.exports = new HAPIRestAPI({
   table: 'numericpk_test',
@@ -13,4 +13,4 @@ module.exports = new HAPIRestAPI({
     id: Joi.number(),
     name: Joi.string()
   }
-});
+})

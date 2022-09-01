@@ -1,6 +1,6 @@
-const Joi = require('joi');
-const HAPIRestAPI = require('./src/rest-api');
-const pool = require('./db');
+const Joi = require('joi')
+const HAPIRestAPI = require('./src/rest-api')
+const pool = require('./db')
 
 module.exports = new HAPIRestAPI({
   table: 'sessions',
@@ -30,4 +30,4 @@ module.exports = new HAPIRestAPI({
   },
   showSql: true,
   maxPayloadBytes: 4096
-});
+})

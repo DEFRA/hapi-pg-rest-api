@@ -1,5 +1,5 @@
-const builder = require('mongo-sql');
-const { mapValues, isArray } = require('lodash');
+const builder = require('mongo-sql')
+const { mapValues, isArray } = require('lodash')
 
 class Repository {
   /**
@@ -10,7 +10,7 @@ class Repository {
    * @param {String} config.primaryKey - primary key field name
    */
   constructor (config = {}) {
-    this.config = config;
+    this.config = config
   }
 
   /**
@@ -21,9 +21,9 @@ class Repository {
    */
   dbQuery (query, queryParams) {
     if (this.config.showSql) {
-      console.log(query, queryParams);
+      console.log(query, queryParams)
     }
-    return this.config.connection.query(query, queryParams);
+    return this.config.connection.query(query, queryParams)
   }
 
   /**
@@ -32,7 +32,7 @@ class Repository {
    * @return {Object}
    */
   static mapSort (sort) {
-    return mapValues(sort, i => (i === -1 ? 'DESC' : 'ASC'));
+    return mapValues(sort, i => (i === -1 ? 'DESC' : 'ASC'))
   }
 
   /**
@@ -41,17 +41,17 @@ class Repository {
    * @return {Promise} resolves with result of DB query
    */
   findRowCount (filter) {
-    const { table } = this.config;
+    const { table } = this.config
 
     const query = {
       type: 'select',
       table,
       columns: ['COUNT(*) AS totalrowcount'],
       where: filter
-    };
+    }
 
-    const result = builder.sql(query);
-    return this.dbQuery(result.toString(), result.values);
+    const result = builder.sql(query)
+    return this.dbQuery(result.toString(), result.values)
   }
 
   /**
@@ -64,7 +64,7 @@ class Repository {
    * @param {Array} columns - specify columns
    */
   find (filter, sort, pagination, columns) {
-    const { table } = this.config;
+    const { table } = this.config
 
     const query = {
       type: 'select',
@@ -72,16 +72,16 @@ class Repository {
       limit: 10,
       where: filter,
       order: Repository.mapSort(sort)
-    };
+    }
     if (columns) {
-      query.columns = columns;
+      query.columns = columns
     }
     if (pagination) {
-      query.limit = pagination.perPage;
-      query.offset = (pagination.page - 1) * pagination.perPage;
+      query.limit = pagination.perPage
+      query.offset = (pagination.page - 1) * pagination.perPage
     }
-    const result = builder.sql(query);
-    return this.dbQuery(result.toString(), result.values);
+    const result = builder.sql(query)
+    return this.dbQuery(result.toString(), result.values)
   }
 
   /**
@@ -92,60 +92,60 @@ class Repository {
    */
   create (data, columns = null) {
     // Convert all data to array
-    const insertData = isArray(data) ? data : [data];
+    const insertData = isArray(data) ? data : [data]
 
-    const { table, upsert } = this.config;
-    const fields = Object.keys(insertData[0]);
+    const { table, upsert } = this.config
+    const fields = Object.keys(insertData[0])
 
-    let query = `INSERT INTO ${table} (${fields.join(',')}) VALUES `;
+    let query = `INSERT INTO ${table} (${fields.join(',')}) VALUES `
 
-    let queryParams = [];
+    let queryParams = []
     const rows = insertData.map(row => {
-      const values = fields.map((value, i) => `$${i + 1 + queryParams.length}`);
+      const values = fields.map((value, i) => `$${i + 1 + queryParams.length}`)
       // Add values to query params
-      queryParams = [...queryParams, ...Object.values(row)];
-      return '(' + values.join(',') + ')';
-    });
+      queryParams = [...queryParams, ...Object.values(row)]
+      return '(' + values.join(',') + ')'
+    })
 
-    query += rows.join(',');
+    query += rows.join(',')
 
     if (upsert) {
-      const parts = upsert.set.map(field => `${field}=EXCLUDED.${field}`);
-      query += ` ON CONFLICT (${upsert.fields.join(',')}) DO UPDATE SET ${parts.join(',')}`;
+      const parts = upsert.set.map(field => `${field}=EXCLUDED.${field}`)
+      query += ` ON CONFLICT (${upsert.fields.join(',')}) DO UPDATE SET ${parts.join(',')}`
     }
 
-    query += ` RETURNING ${columns ? `"${columns.join('","')}"` : '*'}`;
+    query += ` RETURNING ${columns ? `"${columns.join('","')}"` : '*'}`
 
-    return this.dbQuery(query, queryParams);
+    return this.dbQuery(query, queryParams)
   }
 
   update (filter, data, columns) {
-    const { table } = this.config;
+    const { table } = this.config
 
     const query = {
       type: 'update',
       table,
       values: data,
       where: filter
-    };
-    const result = builder.sql(query);
+    }
+    const result = builder.sql(query)
 
-    const sql = result.toString() + ` RETURNING ${columns ? `"${columns.join('","')}"` : '*'}`;
+    const sql = result.toString() + ` RETURNING ${columns ? `"${columns.join('","')}"` : '*'}`
 
-    return this.dbQuery(sql, result.values);
+    return this.dbQuery(sql, result.values)
   }
 
   delete (filter) {
-    const { table } = this.config;
+    const { table } = this.config
 
     const query = {
       type: 'delete',
       table,
       where: filter
-    };
-    const result = builder.sql(query);
-    return this.dbQuery(result.toString(), result.values);
+    }
+    const result = builder.sql(query)
+    return this.dbQuery(result.toString(), result.values)
   }
 }
 
-module.exports = Repository;
+module.exports = Repository
