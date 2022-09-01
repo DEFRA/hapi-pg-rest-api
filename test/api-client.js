@@ -6,7 +6,7 @@ const rp = require('request-promise-native').defaults({
   strictSSL: false
 });
 
-const { experiment, test, before, after } = exports.lab = require('lab').script();
+const { experiment, test, before, after } = exports.lab = require('@hapi/lab').script();
 require('../server.js');
 
 // server.start();

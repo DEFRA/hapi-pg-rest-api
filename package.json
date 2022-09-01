@@ -13,7 +13,7 @@
   },
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
-    "lint": "./node_modules/.bin/eslint ./src/**/*.js --fix",
+    "lint": "standard",
     "test": "lab",
     "test:bail": "lab --bail",
     "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md",
