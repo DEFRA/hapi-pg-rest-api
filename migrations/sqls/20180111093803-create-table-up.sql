@@ -12,10 +12,3 @@ CREATE TABLE sessions
     date_updated timestamp with time zone,
     CONSTRAINT sessions_pkey PRIMARY KEY (session_id)
 )
-WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
-
-ALTER TABLE sessions
-    OWNER to water_user;
