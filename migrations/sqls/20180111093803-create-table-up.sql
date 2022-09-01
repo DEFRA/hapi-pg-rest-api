@@ -18,4 +18,4 @@ WITH (
 TABLESPACE pg_default;
 
 ALTER TABLE sessions
-    OWNER to postgres;
+    OWNER to water_user;
