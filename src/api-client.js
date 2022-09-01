@@ -142,9 +142,9 @@ class APIClient {
         page,
         perPage
       }
-      const { error, data } = await this.findMany(filter, sort, pagination, columns)
+      const { error: pageError, data } = await this.findMany(filter, sort, pagination, columns)
 
-      throwIfError(error)
+      throwIfError(pageError)
 
       rows.push(...data)
     }
