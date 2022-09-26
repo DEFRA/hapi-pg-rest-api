@@ -1,9 +1,11 @@
 const { throwIfError } = require('./src/helpers')
+const HAPIRestAPI = require('./src/rest-api.js')
+const APIClient = require('./src/api-client.js')
+const manager = require('./src/manager.js')
 
-module.exports = require('./src/rest-api.js')
-
-module.exports.APIClient = require('./src/api-client.js')
-
-module.exports.manager = require('./src/manager.js')
-
-module.exports.throwIfError = throwIfError
+module.exports = {
+  throwIfError,
+  HAPIRestAPI,
+  APIClient,
+  manager
+}

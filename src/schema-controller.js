@@ -56,4 +56,6 @@ const getSchema = async (request, h) => {
   })
 }
 
-exports.getSchema = getSchema
+module.exports = {
+  getSchema
+}
