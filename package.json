@@ -2,28 +2,21 @@
   "name": "@envage/hapi-pg-rest-api",
   "version": "7.0.0",
   "description": "RESTful API builder for Postgres DB table within a HAPI v20 application",
+  "homepage": "https://github.com/DEFRA/water-abstraction-team",
   "main": "index.js",
-  "bugs": {
-    "url": "https://github.com/DEFRA/hapi-pg-rest-api/issues"
-  },
-  "homepage": "https://github.com/DEFRA/hapi-pg-rest-api#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/DEFRA/hapi-pg-rest-api.git"
   },
+  "author": "WRLS service team",
+  "license": "OGL-UK-3.0",
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
     "lint": "standard",
     "test": "lab",
     "test:bail": "lab --bail",
-    "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md",
-    "codecov": "codecov"
+    "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md"
   },
-  "engines": {
-    "node": ">=8.0"
-  },
-  "author": "Department for Environment, Food & Rural Affairs",
-  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "es6-error": "^4.1.1",
     "joi": "^17.3.0",
