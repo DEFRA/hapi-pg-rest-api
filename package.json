@@ -15,7 +15,7 @@
     "lint": "standard",
     "test": "lab",
     "test:bail": "lab --bail",
-    "version": "auto-changelog -p --commit-limit false && git add CHANGELOG.md"
+    "version": "npx --yes auto-changelog -p --commit-limit false && git add CHANGELOG.md"
   },
   "dependencies": {
     "es6-error": "^4.1.1",
@@ -29,7 +29,6 @@
     "@hapi/code": "^9.0.1",
     "@hapi/hapi": "^20.2.1",
     "@hapi/lab": "^25.0.1",
-    "auto-changelog": "^1.13.0",
     "blipp": "^3.0.0",
     "bluebird": "^3.5.5",
     "db-migrate": "^0.11.11",
