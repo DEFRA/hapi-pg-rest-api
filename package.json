@@ -11,7 +11,7 @@
   "author": "WRLS service team",
   "license": "OGL-UK-3.0",
   "scripts": {
-    "migrate": "node node_modules/db-migrate/bin/db-migrate up --verbose",
+    "migrate": "node node_modules/db-migrate/bin/db-migrate up",
     "lint": "standard",
     "test": "lab",
     "test:bail": "lab --bail",
