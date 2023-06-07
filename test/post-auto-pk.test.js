@@ -1,4 +1,3 @@
-
 const Lab = require('@hapi/lab')
 
 const lab = Lab.script()
