@@ -38,7 +38,7 @@
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "sinon": "^7.3.2",
-    "standard": "^17.0.0"
+    "standard": "^17.1.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,4 +1,3 @@
-
 // Test PUT - not yet implemented
 
 const Lab = require('@hapi/lab')
