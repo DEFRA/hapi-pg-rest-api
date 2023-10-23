@@ -22,7 +22,7 @@ jobs:
 
       # Gets the version to use by referring to the previous step
       - name: Install Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "${{ steps.nvm.outputs.NVMRC }}"
           registry-url: https://registry.npmjs.org/
