@@ -1,6 +1,6 @@
 # Hapi PG Rest API
 
-![Build Status](https://github.com/DEFRA/hapi-pg-rest-api/actions/workflows/ci.yml/badge.svg?branch=master)
+![Build Status](https://github.com/DEFRA/hapi-pg-rest-api/actions/workflows/ci.yml/badge.svg?branch=main)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=DEFRA_hapi-pg-rest-api&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=DEFRA_hapi-pg-rest-api)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=DEFRA_hapi-pg-rest-api&metric=coverage)](https://sonarcloud.io/dashboard?id=DEFRA_hapi-pg-rest-api)
 [![Known Vulnerabilities](https://snyk.io/test/github/DEFRA/hapi-pg-rest-api/badge.svg)](https://snyk.io/test/github/DEFRA/hapi-pg-rest-api)
