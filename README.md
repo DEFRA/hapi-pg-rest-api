@@ -3,7 +3,6 @@
 ![Build Status](https://github.com/DEFRA/hapi-pg-rest-api/actions/workflows/ci.yml/badge.svg?branch=main)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=DEFRA_hapi-pg-rest-api&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=DEFRA_hapi-pg-rest-api)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=DEFRA_hapi-pg-rest-api&metric=coverage)](https://sonarcloud.io/dashboard?id=DEFRA_hapi-pg-rest-api)
-[![Known Vulnerabilities](https://snyk.io/test/github/DEFRA/hapi-pg-rest-api/badge.svg)](https://snyk.io/test/github/DEFRA/hapi-pg-rest-api)
 [![Licence](https://img.shields.io/badge/Licence-OGLv3-blue.svg)](http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3)
 
 A module to create a simple REST API in a HAPI 20 application connected to a particular Postgres DB table.
