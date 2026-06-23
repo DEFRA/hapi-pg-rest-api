@@ -42,5 +42,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "allowScripts": {
+    "ssh2@1.4.0": true
   }
 }
